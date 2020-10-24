@@ -1,0 +1,42 @@
+
+ # of trials = 100000000000 , estimate of pi is 3.141590008 
+
+ # walltime on master processor : 2570.86216432 
+
+ # of trials = 100000000000 , estimate of pi is 3.141590008 
+
+ # walltime on master processor : 2577.80823833 
+
+ # of trials = 100000000000 , estimate of pi is 3.141590008 
+
+ # walltime on master processor : 2607.11014488 
+
+ # walltime on processor 1 : 651.23567010 
+
+
+ # walltime on processor 2 : 651.23557586 
+ # of trials = 100000000000 , estimate of pi is 3.141584894 
+
+ # walltime on master processor : 651.23560416 
+
+ # walltime on processor 3 : 651.23561432 
+
+ # of trials = 100000000000 , estimate of pi is 3.141584894 
+
+ # walltime on master processor : 650.49359029 
+
+ # walltime on processor 1 : 650.49314978 
+
+ # walltime on processor 2 : 650.49351323 
+
+ # walltime on processor 3 : 650.49327254 
+
+ # walltime on processor 1 : 642.85278783 
+
+ # walltime on processor 2 : 642.92917670 
+
+ # of trials = 100000000000 , estimate of pi is 3.141584894 
+
+ # walltime on master processor : 643.82588803 
+
+ # walltime on processor 3 : 643.82560364 
