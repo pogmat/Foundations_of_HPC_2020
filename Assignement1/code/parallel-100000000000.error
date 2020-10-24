@@ -8,3 +8,5 @@
 0inputs+16648outputs (9major+120783minor)pagefaults 0swaps
 2574.81user 3.06system 10:44.17elapsed 400%CPU (0avgtext+0avgdata 124272maxresident)k
 0inputs+16648outputs (9major+120764minor)pagefaults 0swaps
+2587.56user 3.15system 5:23.83elapsed 800%CPU (0avgtext+0avgdata 124984maxresident)k
+0inputs+16648outputs (9major+238763minor)pagefaults 0swaps
