@@ -15,7 +15,7 @@ for procs in 1 4 8 12 16 20 24 28 32 36 40 44 48 ; do
 	echo "N= " ${MOVES}
 	for i in $(seq ${LAUNCHES})
 	do
-		/usr/bin/time mpirun  --mca btl '^openib' -np ${procs} mpi_pi.x  ${MOVES} >>parallel-${MOVES}.output 2>>parallel-${MOVES}.error
+		/usr/bin/time mpirun  --mca btl '^openib' -np ${procs} mpi_pi.x  ${MOVES} >>parallel-10.output 2>>parallel-10.error
 	done
 done
 echo "Done."

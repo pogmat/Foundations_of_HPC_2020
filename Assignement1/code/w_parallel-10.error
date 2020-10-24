@@ -1,0 +1,94 @@
+1034.75user 1.53system 4:19.06elapsed 400%CPU (0avgtext+0avgdata 123944maxresident)k
+0inputs+16648outputs (9major+120483minor)pagefaults 0swaps
+2150.33user 2.78system 4:29.05elapsed 800%CPU (0avgtext+0avgdata 124880maxresident)k
+0inputs+16648outputs (9major+238791minor)pagefaults 0swaps
+3122.97user 2.48system 4:21.08elapsed 1197%CPU (0avgtext+0avgdata 125532maxresident)k
+0inputs+16648outputs (9major+356839minor)pagefaults 0swaps
+4258.16user 4.41system 4:28.32elapsed 1588%CPU (0avgtext+0avgdata 126148maxresident)k
+0inputs+16648outputs (9major+477283minor)pagefaults 0swaps
+5347.98user 5.17system 4:36.35elapsed 1937%CPU (0avgtext+0avgdata 126668maxresident)k
+0inputs+16648outputs (9major+597966minor)pagefaults 0swaps
+6398.61user 10.29system 4:27.10elapsed 2399%CPU (0avgtext+0avgdata 127388maxresident)k
+0inputs+16656outputs (9major+720061minor)pagefaults 0swaps
+8088.01user 9.70system 4:53.79elapsed 2756%CPU (0avgtext+0avgdata 127888maxresident)k
+0inputs+16648outputs (9major+843143minor)pagefaults 0swaps
+9406.41user 11.23system 4:56.72elapsed 3173%CPU (0avgtext+0avgdata 128484maxresident)k
+0inputs+16664outputs (9major+967545minor)pagefaults 0swaps
+11041.74user 15.35system 5:08.73elapsed 3581%CPU (0avgtext+0avgdata 129168maxresident)k
+0inputs+16672outputs (9major+1095909minor)pagefaults 0swaps
+12281.75user 17.20system 5:10.54elapsed 3960%CPU (0avgtext+0avgdata 129816maxresident)k
+0inputs+16664outputs (9major+1220642minor)pagefaults 0swaps
+13620.53user 25.52system 5:12.33elapsed 4369%CPU (0avgtext+0avgdata 130492maxresident)k
+0inputs+16672outputs (9major+1348233minor)pagefaults 0swaps
+15606.77user 23.44system 5:28.07elapsed 4764%CPU (0avgtext+0avgdata 131048maxresident)k
+0inputs+16664outputs (9major+1475995minor)pagefaults 0swaps
+1035.40user 1.52system 4:19.03elapsed 400%CPU (0avgtext+0avgdata 124384maxresident)k
+0inputs+16648outputs (9major+120476minor)pagefaults 0swaps
+2065.56user 3.05system 4:18.56elapsed 800%CPU (0avgtext+0avgdata 124916maxresident)k
+0inputs+16648outputs (9major+238797minor)pagefaults 0swaps
+3114.94user 4.59system 4:19.91elapsed 1200%CPU (0avgtext+0avgdata 125548maxresident)k
+0inputs+16648outputs (9major+357194minor)pagefaults 0swaps
+4194.79user 5.95system 4:22.66elapsed 1599%CPU (0avgtext+0avgdata 126236maxresident)k
+0inputs+16656outputs (9major+477196minor)pagefaults 0swaps
+5320.79user 8.80system 4:26.75elapsed 1997%CPU (0avgtext+0avgdata 126884maxresident)k
+0inputs+16648outputs (9major+598240minor)pagefaults 0swaps
+6414.97user 12.18system 4:28.77elapsed 2391%CPU (0avgtext+0avgdata 127372maxresident)k
+0inputs+16648outputs (9major+720398minor)pagefaults 0swaps
+8070.62user 11.47system 4:49.55elapsed 2791%CPU (0avgtext+0avgdata 127980maxresident)k
+0inputs+16648outputs (9major+843219minor)pagefaults 0swaps
+9221.80user 12.37system 4:52.83elapsed 3153%CPU (0avgtext+0avgdata 128548maxresident)k
+0inputs+16672outputs (9major+967832minor)pagefaults 0swaps
+10706.89user 14.09system 4:58.21elapsed 3595%CPU (0avgtext+0avgdata 129324maxresident)k
+0inputs+16664outputs (9major+1093738minor)pagefaults 0swaps
+12113.50user 19.62system 5:05.12elapsed 3976%CPU (0avgtext+0avgdata 129928maxresident)k
+0inputs+16672outputs (9major+1220183minor)pagefaults 0swaps
+13827.91user 28.54system 5:31.14elapsed 4184%CPU (0avgtext+0avgdata 130492maxresident)k
+0inputs+16664outputs (9major+1348224minor)pagefaults 0swaps
+[ct1pg-gnode003:2831 :0:2831]       ud_ep.c:255  Fatal: UD endpoint 0x14e098003630 to <no debug data>: unhandled timeout error
+==== backtrace (tid:   2831) ====
+ 0 0x000000000004ee05 ucs_debug_print_backtrace()  ???:0
+ 1 0x0000000000046dde uct_ud_grh_get_dgid()  ???:0
+ 2 0x0000000000048a8e ucs_callbackq_put_id_noflag()  ???:0
+ 3 0x000000000002300a ucp_worker_progress()  ???:0
+ 4 0x0000000000005433 mca_pml_ucx_send()  ???:0
+ 5 0x000000000008ae38 PMPI_Ssend()  ???:0
+ 6 0x0000000000400d5d main()  ???:0
+ 7 0x0000000000022505 __libc_start_main()  ???:0
+ 8 0x0000000000400a59 _start()  ???:0
+=================================
+[ct1pg-gnode003:02831] *** Process received signal ***
+[ct1pg-gnode003:02831] Signal: Aborted (6)
+[ct1pg-gnode003:02831] Signal code:  (-6)
+[ct1pg-gnode003:02831] [ 0] /lib64/libpthread.so.0(+0xf5f0)[0x14e0b61935f0]
+[ct1pg-gnode003:02831] [ 1] /lib64/libc.so.6(gsignal+0x37)[0x14e0b5dec337]
+[ct1pg-gnode003:02831] [ 2] /lib64/libc.so.6(abort+0x148)[0x14e0b5deda28]
+[ct1pg-gnode003:02831] [ 3] /lib64/libucs.so.0(ucs_fatal_error_message+0x55)[0x14e0a91c37f5]
+[ct1pg-gnode003:02831] [ 4] /lib64/libucs.so.0(+0x4d995)[0x14e0a91c3995]
+[ct1pg-gnode003:02831] [ 5] /lib64/ucx/libuct_ib.so.0(+0x46dde)[0x14e0a8b33dde]
+[ct1pg-gnode003:02831] [ 6] /lib64/libucs.so.0(+0x48a8e)[0x14e0a91bea8e]
+[ct1pg-gnode003:02831] [ 7] /lib64/libucp.so.0(ucp_worker_progress+0x5a)[0x14e0a994500a]
+[ct1pg-gnode003:02831] [ 8] /opt/area/shared/programs/x86_64/openmpi/4.0.3/gnu/9.3.0/lib/openmpi/mca_pml_ucx.so(mca_pml_ucx_send+0x2e3)[0x14e0aa193433]
+[ct1pg-gnode003:02831] [ 9] /opt/area/shared/programs/x86_64/openmpi/4.0.3/gnu/9.3.0/lib/libmpi.so.40(PMPI_Ssend+0x118)[0x14e0b642ae38]
+[ct1pg-gnode003:02831] [10] mpi_pi.x[0x400d5d]
+[ct1pg-gnode003:02831] [11] /lib64/libc.so.6(__libc_start_main+0xf5)[0x14e0b5dd8505]
+[ct1pg-gnode003:02831] [12] mpi_pi.x[0x400a59]
+[ct1pg-gnode003:02831] *** End of error message ***
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun noticed that process rank 15 with PID 0 on node ct1pg-gnode003 exited on signal 6 (Aborted).
+--------------------------------------------------------------------------
+307.47user 0.72system 5:10.09elapsed 99%CPU (0avgtext+0avgdata 149924maxresident)k
+0inputs+16680outputs (9major+39012minor)pagefaults 0swaps
+1033.13user 1.54system 4:18.46elapsed 400%CPU (0avgtext+0avgdata 124204maxresident)k
+0inputs+16656outputs (9major+120762minor)pagefaults 0swaps
+2069.90user 3.23system 4:19.08elapsed 800%CPU (0avgtext+0avgdata 124928maxresident)k
+0inputs+16648outputs (9major+238774minor)pagefaults 0swaps
+3143.56user 2.37system 4:22.36elapsed 1199%CPU (0avgtext+0avgdata 125532maxresident)k
+0inputs+16648outputs (9major+356992minor)pagefaults 0swaps
+4193.83user 4.18system 4:23.79elapsed 1591%CPU (0avgtext+0avgdata 126100maxresident)k
+0inputs+16648outputs (9major+478397minor)pagefaults 0swaps
+5476.45user 8.53system 4:36.38elapsed 1984%CPU (0avgtext+0avgdata 126788maxresident)k
+0inputs+16648outputs (9major+597957minor)pagefaults 0swaps
