@@ -66,7 +66,7 @@ void func2(void)
  * try to set a different stack limit through
  *   ulimit -s <limit>
  * or to decrease the dimension of array 
- * (decreasing STACKSMASH) and magically the 
+ * (decreasing STACKSMASH) and magically the q
  * segfault will disappear
  */
 {
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
   
   if( (long int)stack_limits.rlim_cur <= MaxS )
     {
-      if( ( (long int)stack_limits.rlim_max < 0 ) ||
+     if( ( (long int)stack_limits.rlim_max < 0 ) ||
 	  ( (long int)stack_limits.rlim_max > MaxS ) )
 	// in this case you can enlarge the soft limit because either
 	// the hard limit is not set or it is larger than the requested memory

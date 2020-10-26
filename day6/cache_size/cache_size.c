@@ -30,8 +30,8 @@
 //#include <ptiming.h>
 
 #define PCHECK(e) \
-  if ( e!= PAPI_OK)						\
-    {printf("Problem in papi call, line %d\n", __LINE__); return 1;}
+  //if ( e!= PAPI_OK)						\
+  //  {printf("Problem in papi call, line %d\n", __LINE__); return 1;}
 
 #define NEVENTS  3
 #define NRUNS    200
