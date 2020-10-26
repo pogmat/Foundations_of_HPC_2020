@@ -1,3 +1,2 @@
-1) parallel-10: stderr lost. Running again. (r_parallel-10.sh).
-2) parallel-11: P=4,8 misses. (r_parallel-11.sh, r2_parallel-11.sh).
-3) w_parallel-10: P=48 strange error. To be done again. (r_w_parallel-10.sh)
+1) r_w_parallel-10.sh (48 cores, a lot to wait)
+2) r2_w_parallel-10.sh (24 cores, in few time)
