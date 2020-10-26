@@ -92,3 +92,15 @@ mpirun noticed that process rank 15 with PID 0 on node ct1pg-gnode003 exited on 
 0inputs+16648outputs (9major+478397minor)pagefaults 0swaps
 5476.45user 8.53system 4:36.38elapsed 1984%CPU (0avgtext+0avgdata 126788maxresident)k
 0inputs+16648outputs (9major+597957minor)pagefaults 0swaps
+8174.99user 11.37system 4:54.09elapsed 2783%CPU (0avgtext+0avgdata 127992maxresident)k
+0inputs+16656outputs (9major+843764minor)pagefaults 0swaps
+9386.31user 12.73system 4:57.27elapsed 3161%CPU (0avgtext+0avgdata 128592maxresident)k
+0inputs+16664outputs (9major+967761minor)pagefaults 0swaps
+10633.95user 13.98system 4:57.19elapsed 3582%CPU (0avgtext+0avgdata 129228maxresident)k
+0inputs+16664outputs (9major+1093320minor)pagefaults 0swaps
+12500.81user 19.33system 5:17.63elapsed 3941%CPU (0avgtext+0avgdata 129948maxresident)k
+0inputs+16672outputs (9major+1220441minor)pagefaults 0swaps
+13486.18user 20.16system 5:10.20elapsed 4354%CPU (0avgtext+0avgdata 130464maxresident)k
+0inputs+16664outputs (9major+1348232minor)pagefaults 0swaps
+15371.17user 22.54system 5:23.02elapsed 4765%CPU (0avgtext+0avgdata 131040maxresident)k
+0inputs+16672outputs (9major+1475928minor)pagefaults 0swaps
