@@ -44,8 +44,8 @@
 0inputs+16672outputs (9major+1220183minor)pagefaults 0swaps
 13827.91user 28.54system 5:31.14elapsed 4184%CPU (0avgtext+0avgdata 130492maxresident)k
 0inputs+16664outputs (9major+1348224minor)pagefaults 0swaps
-########### HERE TWO LINES FROM THE NEW RUN OF r_w_parallel-10.sh
-#################################################################
+14606.62user 23.31system 5:06.74elapsed 4769%CPU (0avgtext+0avgdata 131096maxresident)k
+0inputs+16664outputs (9major+1477113minor)pagefaults 0swaps
 1033.13user 1.54system 4:18.46elapsed 400%CPU (0avgtext+0avgdata 124204maxresident)k
 0inputs+16656outputs (9major+120762minor)pagefaults 0swaps
 2069.90user 3.23system 4:19.08elapsed 800%CPU (0avgtext+0avgdata 124928maxresident)k
