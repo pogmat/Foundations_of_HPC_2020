@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include "benchmark.h"
+//#include "benchmark.h"
 #ifdef __APPLE__
 #include <malloc/malloc.h>
 #endif
@@ -27,7 +27,7 @@ void demo( size_t N )
     
     size_t expected = malloc_usable_size(values);
     printf("allocated %zu, reported allocation = %zu \n", N * sizeof(uint64_t), expected);
-    BEST_TIME(malloc_usable_size(values), expected, , repeat, 1, true);
+    //BEST_TIME(malloc_usable_size(values), expected, , repeat, 1, true);
     
 #endif
     
