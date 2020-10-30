@@ -1,0 +1,71 @@
+22125.46user 3.98system 30:43.77elapsed 1200%CPU (0avgtext+0avgdata 136916maxresident)k
+0inputs+16608outputs (7major+66959minor)pagefaults 0swaps
+[ct1pt-tnode008:8802 :0:8802]       ud_ep.c:255  Fatal: UD endpoint 0x14c300001450 to <no debug data>: unhandled timeout error
+==== backtrace (tid:   8802) ====
+ 0 0x000000000004ee05 ucs_debug_print_backtrace()  ???:0
+ 1 0x0000000000046dde uct_ud_grh_get_dgid()  ???:0
+ 2 0x0000000000048a8e ucs_callbackq_put_id_noflag()  ???:0
+ 3 0x000000000002300a ucp_worker_progress()  ???:0
+ 4 0x0000000000005433 mca_pml_ucx_send()  ???:0
+ 5 0x000000000008ae38 PMPI_Ssend()  ???:0
+ 6 0x0000000000400d5d main()  ???:0
+ 7 0x0000000000022505 __libc_start_main()  ???:0
+ 8 0x0000000000400a59 _start()  ???:0
+=================================
+[ct1pt-tnode008:08802] *** Process received signal ***
+[ct1pt-tnode008:08802] Signal: Aborted (6)
+[ct1pt-tnode008:08802] Signal code:  (-6)
+[ct1pt-tnode008:08802] [ 0] /lib64/libpthread.so.0(+0xf5f0)[0x14c31fac25f0]
+[ct1pt-tnode008:08802] [ 1] /lib64/libc.so.6(gsignal+0x37)[0x14c31f71b337]
+[ct1pt-tnode008:08802] [ 2] /lib64/libc.so.6(abort+0x148)[0x14c31f71ca28]
+[ct1pt-tnode008:08802] [ 3] /lib64/libucs.so.0(ucs_fatal_error_message+0x55)[0x14c30eaa77f5]
+[ct1pt-tnode008:08802] [ 4] /lib64/libucs.so.0(+0x4d995)[0x14c30eaa7995]
+[ct1pt-tnode008:08802] [ 5] /lib64/ucx/libuct_ib.so.0(+0x46dde)[0x14c30e417dde]
+[ct1pt-tnode008:08802] [ 6] /lib64/libucs.so.0(+0x48a8e)[0x14c30eaa2a8e]
+[ct1pt-tnode008:08802] [ 7] /lib64/libucp.so.0(ucp_worker_progress+0x5a)[0x14c30f22900a]
+[ct1pt-tnode008:08802] [ 8] /opt/area/shared/programs/x86_64/openmpi/4.0.3/gnu/9.3.0/lib/openmpi/mca_pml_ucx.so(mca_pml_ucx_send+0x2e3)[0x14c30f9d1433]
+[ct1pt-tnode008:08802] [ 9] /opt/area/shared/programs/x86_64/openmpi/4.0.3/gnu/9.3.0/lib/libmpi.so.40(PMPI_Ssend+0x118)[0x14c31fd59e38]
+[ct1pt-tnode008:08802] [10] mpi_pi.x[0x400d5d]
+[ct1pt-tnode008:08802] [11] /lib64/libc.so.6(__libc_start_main+0xf5)[0x14c31f707505]
+[ct1pt-tnode008:08802] [12] mpi_pi.x[0x400a59]
+[ct1pt-tnode008:08802] *** End of error message ***
+[ct1pt-tnode008:8801 :0:8801]       ud_ep.c:255  Fatal: UD endpoint 0x149178000ba0 to <no debug data>: unhandled timeout error
+==== backtrace (tid:   8801) ====
+ 0 0x000000000004ee05 ucs_debug_print_backtrace()  ???:0
+ 1 0x0000000000046dde uct_ud_grh_get_dgid()  ???:0
+ 2 0x0000000000048a8e ucs_callbackq_put_id_noflag()  ???:0
+ 3 0x000000000002300a ucp_worker_progress()  ???:0
+ 4 0x0000000000005433 mca_pml_ucx_send()  ???:0
+ 5 0x000000000008ae38 PMPI_Ssend()  ???:0
+ 6 0x0000000000400d5d main()  ???:0
+ 7 0x0000000000022505 __libc_start_main()  ???:0
+ 8 0x0000000000400a59 _start()  ???:0
+=================================
+[ct1pt-tnode008:08801] *** Process received signal ***
+[ct1pt-tnode008:08801] Signal: Aborted (6)
+[ct1pt-tnode008:08801] Signal code:  (-6)
+[ct1pt-tnode008:08801] [ 0] /lib64/libpthread.so.0(+0xf5f0)[0x149199f145f0]
+[ct1pt-tnode008:08801] [ 1] /lib64/libc.so.6(gsignal+0x37)[0x149199b6d337]
+[ct1pt-tnode008:08801] [ 2] /lib64/libc.so.6(abort+0x148)[0x149199b6ea28]
+[ct1pt-tnode008:08801] [ 3] /lib64/libucs.so.0(ucs_fatal_error_message+0x55)[0x14918cfbf7f5]
+[ct1pt-tnode008:08801] [ 4] /lib64/libucs.so.0(+0x4d995)[0x14918cfbf995]
+[ct1pt-tnode008:08801] [ 5] /lib64/ucx/libuct_ib.so.0(+0x46dde)[0x14918c92fdde]
+[ct1pt-tnode008:08801] [ 6] /lib64/libucs.so.0(+0x48a8e)[0x14918cfbaa8e]
+[ct1pt-tnode008:08801] [ 7] /lib64/libucp.so.0(ucp_worker_progress+0x5a)[0x14918d74100a]
+[ct1pt-tnode008:08801] [ 8] /opt/area/shared/programs/x86_64/openmpi/4.0.3/gnu/9.3.0/lib/openmpi/mca_pml_ucx.so(mca_pml_ucx_send+0x2e3)[0x14918df8f433]
+[ct1pt-tnode008:08801] [ 9] /opt/area/shared/programs/x86_64/openmpi/4.0.3/gnu/9.3.0/lib/libmpi.so.40(PMPI_Ssend+0x118)[0x14919a1abe38]
+[ct1pt-tnode008:08801] [10] mpi_pi.x[0x400d5d]
+[ct1pt-tnode008:08801] [11] /lib64/libc.so.6(__libc_start_main+0xf5)[0x149199b59505]
+[ct1pt-tnode008:08801] [12] mpi_pi.x[0x400a59]
+[ct1pt-tnode008:08801] *** End of error message ***
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun noticed that process rank 2 with PID 0 on node ct1pt-tnode008 exited on signal 6 (Aborted).
+--------------------------------------------------------------------------
+1829.22user 1.15system 30:30.00elapsed 100%CPU (0avgtext+0avgdata 137180maxresident)k
+48inputs+16624outputs (7major+11276minor)pagefaults 0swaps
+21958.72user 8.02system 30:30.12elapsed 1200%CPU (0avgtext+0avgdata 135260maxresident)k
+0inputs+16608outputs (7major+66927minor)pagefaults 0swaps
