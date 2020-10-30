@@ -1,0 +1,38 @@
+[ct1pg-gnode002:20181:0:20181]       ud_ep.c:255  Fatal: UD endpoint 0x146bcc002d80 to <no debug data>: unhandled timeout error
+==== backtrace (tid:  20181) ====
+ 0 0x000000000004ee05 ucs_debug_print_backtrace()  ???:0
+ 1 0x0000000000046dde uct_ud_grh_get_dgid()  ???:0
+ 2 0x0000000000048a8e ucs_callbackq_put_id_noflag()  ???:0
+ 3 0x000000000002300a ucp_worker_progress()  ???:0
+ 4 0x0000000000005433 mca_pml_ucx_send()  ???:0
+ 5 0x000000000008ae38 PMPI_Ssend()  ???:0
+ 6 0x0000000000400d5d main()  ???:0
+ 7 0x0000000000022505 __libc_start_main()  ???:0
+ 8 0x0000000000400a59 _start()  ???:0
+=================================
+[ct1pg-gnode002:20181] *** Process received signal ***
+[ct1pg-gnode002:20181] Signal: Aborted (6)
+[ct1pg-gnode002:20181] Signal code:  (-6)
+[ct1pg-gnode002:20181] [ 0] /lib64/libpthread.so.0(+0xf5f0)[0x146bec8e55f0]
+[ct1pg-gnode002:20181] [ 1] /lib64/libc.so.6(gsignal+0x37)[0x146bec53e337]
+[ct1pg-gnode002:20181] [ 2] /lib64/libc.so.6(abort+0x148)[0x146bec53fa28]
+[ct1pg-gnode002:20181] [ 3] /lib64/libucs.so.0(ucs_fatal_error_message+0x55)[0x146bdb8a17f5]
+[ct1pg-gnode002:20181] [ 4] /lib64/libucs.so.0(+0x4d995)[0x146bdb8a1995]
+[ct1pg-gnode002:20181] [ 5] /lib64/ucx/libuct_ib.so.0(+0x46dde)[0x146bdb211dde]
+[ct1pg-gnode002:20181] [ 6] /lib64/libucs.so.0(+0x48a8e)[0x146bdb89ca8e]
+[ct1pg-gnode002:20181] [ 7] /lib64/libucp.so.0(ucp_worker_progress+0x5a)[0x146be012c00a]
+[ct1pg-gnode002:20181] [ 8] /opt/area/shared/programs/x86_64/openmpi/4.0.3/gnu/9.3.0/lib/openmpi/mca_pml_ucx.so(mca_pml_ucx_send+0x2e3)[0x146be097a433]
+[ct1pg-gnode002:20181] [ 9] /opt/area/shared/programs/x86_64/openmpi/4.0.3/gnu/9.3.0/lib/libmpi.so.40(PMPI_Ssend+0x118)[0x146becb7ce38]
+[ct1pg-gnode002:20181] [10] mpi_pi.x[0x400d5d]
+[ct1pg-gnode002:20181] [11] /lib64/libc.so.6(__libc_start_main+0xf5)[0x146bec52a505]
+[ct1pg-gnode002:20181] [12] mpi_pi.x[0x400a59]
+[ct1pg-gnode002:20181] *** End of error message ***
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun noticed that process rank 10 with PID 0 on node ct1pg-gnode002 exited on signal 6 (Aborted).
+--------------------------------------------------------------------------
+309.38user 0.75system 5:13.30elapsed 98%CPU (0avgtext+0avgdata 187728maxresident)k
+0inputs+16672outputs (9major+39489minor)pagefaults 0swaps
