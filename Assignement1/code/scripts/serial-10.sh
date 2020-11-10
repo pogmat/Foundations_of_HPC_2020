@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -q dssc
 #PBS -l nodes=1:ppn=1
-#PBS -l walltime=00:12:00
+#PBS -l walltime=00:30:00
 
 
 cd $PBS_O_WORKDIR 
