@@ -366,6 +366,7 @@ INPUT /usr/share/texmf-dist/fonts/tfm/public/lm/ec-lmbx12.tfm
 INPUT /var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map
 INPUT /home/matteo/Build/git/MHPC/p1.2/Assignement1/code/report/th_mod_3.pgf
 INPUT /home/matteo/Build/git/MHPC/p1.2/Assignement1/code/report/th_mod_3.pgf
+INPUT /usr/share/texmf-dist/fonts/tfm/public/lm/ec-lmri10.tfm
 INPUT /home/matteo/Build/git/MHPC/p1.2/Assignement1/code/report/th_mod_4.pgf
 INPUT /home/matteo/Build/git/MHPC/p1.2/Assignement1/code/report/th_mod_4.pgf
 INPUT /home/matteo/Build/git/MHPC/p1.2/Assignement1/code/report/th_mod_5.pgf
@@ -410,6 +411,7 @@ INPUT /usr/share/texmf-dist/fonts/type1/public/lm/lmr17.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/lm/lmr6.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/lm/lmr7.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/lm/lmr8.pfb
+INPUT /usr/share/texmf-dist/fonts/type1/public/lm/lmri10.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/lm/lmsy10.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/lm/lmsy7.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/lm/lmsy8.pfb

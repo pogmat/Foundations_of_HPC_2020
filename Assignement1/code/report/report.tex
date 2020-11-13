@@ -192,20 +192,20 @@ The graph in Figure~\ref{fig:th_mod_3} reports in log-log scale the speedup fact
 \end{figure}
 
 \subsection{Attempt of improvement}
-Perhaps it is possible to save some communication time. The ideas are basically two:
+Perhaps it is possible to save some communication time. The ideas is basically to exploit binary tree collective operation. This will affect
 \begin{itemize}
-    \item  One can share a variable with the slave process. Every process does know in which location of the variable it can write. So the end communication can be done all at once in a time $T_{\text{comm.}}$;
-    \item Even at the beginning, after the master have read all the numbers perhaps it can communicate those number to each slave (almost) simultaneously.
+    \item  the communication part at the beginning using \textit{scatter}-like operation, will reduce the initial communication overhead to $\lceil\log_2 P\rceil\,T_{\text{comm.}}$;
+    \item the sum itself using a \textit{reduce}-like operation. This will give a contribution of $\lceil\log_2 P\rceil\,T_{\text{comm.}}$ again for the communication part and $\lceil\log_2 P\rceil\,T_{\text{comp.}}$ for the computation part.
 \end{itemize}    
 All in all the new time is
 \begin{equation}
-\tilde{T}(P,N) = T_{\text{read}} + 2T_{\text{comm.}} + \left(\left\lceil\frac{N}{P}\right\rceil+P-2\right)T_{\text{comp.}}\;.
+\tilde{T}(P,N) = T_{\text{read}} + 2\left\lceil \log_2(P)\right\rceil T_{\text{comm.}} + \left(\left\lceil\frac{N}{P}\right\rceil+\left\lceil \log_2(P)\right\rceil -1\right)T_{\text{comp.}}\;.
 \end{equation}
-In this case it is easy to see that the minimum is attained at $P_{\mr{min.}} \simeq \sqrt{N}$. In Figure~\ref{fig:th_mod_4} a graph is plotted to compare the best value of $P$ in function of $N$. Notice that since the overhead time does not scale with $P$ in this case, we have that $P_{\text{min.}}^{\text{(improved)}} > P_{\text{min.}}^{\text{(naive)}}$. In Figure~\ref{fig:th_mod_5} we see that the improved model perform better than the naive one expecially for higher values of $N$. However, as we noticed just before, the number of processors required to minimize the time, in the improved model in quite higher: with our numbers probably is much more convenient to wait $\sim 10^{-2}\,\text{s}$ more than to buy $\sim 10^6$ cores. 
+In this case it is easy to see that the minimum is attained at $P_{\mr{min.}} \simeq N\frac{T_{\text{comp.}}}{2T_{\text{comm.}}+T_{\text{comp.}}}\log 2$. In Figure~\ref{fig:th_mod_4} a graph is plotted to compare the best value of $P$ in function of $N$. Notice that since the overhead time does not scale linearly with $P$ in this case, we have that $P_{\text{min.}}^{\text{(improved)}} > P_{\text{min.}}^{\text{(naive)}}$. In Figure~\ref{fig:th_mod_5} we see that the improved model perform better than the naive one expecially for higher values of $N$. However, as we noticed just before, the number of processors required to minimize the time, in the improved model in quite higher: with our numbers probably is much more convenient to wait $\sim 10^{-2}\,\text{s}$ more than to buy $\sim 10^5$ cores. 
 \begin{figure}[htbp]
     \centering
     \input{th_mod_4.pgf}
-    \caption{Comparison between naive and refined algorithm.}
+    \caption{Comparison between naive and refined algorithm. Notice that, for the improved model the analytical and numerical point do not overlap perfectly; this is because of the upper integral part.}
     \label{fig:th_mod_4}
 \end{figure}
 
