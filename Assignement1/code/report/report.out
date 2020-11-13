@@ -1,0 +1,7 @@
+\BOOKMARK [1][-]{section.1}{Theoretical Model}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Scaling Analysis}{section.1}% 2
+\BOOKMARK [2][-]{subsection.1.2}{Attempt of improvement}{section.1}% 3
+\BOOKMARK [1][-]{section.2}{MPI analysis}{}% 4
+\BOOKMARK [2][-]{subsection.2.1}{Strong}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.2}{Parallel Overhead}{section.2}% 6
+\BOOKMARK [2][-]{subsection.2.3}{Weak}{section.2}% 7

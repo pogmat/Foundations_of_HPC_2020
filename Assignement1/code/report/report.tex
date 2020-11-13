@@ -1,0 +1,327 @@
+\documentclass[11pt,a4paper]{article}
+
+%%% DISCLAIMER %%%
+
+% Feel free to put your favourite packages
+% and to define your own command
+% but, please, *DO NOT USE* \be and \ee
+% as \begin{equation} and \end{equation}
+% or other similar crap.
+% Use instead your editor capabilities if you want to type less.
+% Why? Read the ams-pakages docs.
+
+
+%%% PACKAGES %%%
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+\usepackage{a4wide}
+
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{mathrsfs}
+\usepackage{bm}
+
+\usepackage{tensor}
+
+\usepackage{xcolor}
+\usepackage[colorlinks=true, linkcolor=violet, citecolor=orange]{hyperref}
+\usepackage{url}
+
+\usepackage{caption, subcaption}
+
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{calc,arrows, decorations.markings}
+
+\usepackage{pgf}
+
+%\usepackage{refcheck}
+
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+%%% COMMANDS %%%
+
+% Discard unused commands
+\newcommand{\lOld}{\l}
+\newcommand{\rOld}{\r}
+\newcommand{\vOld}{\v}
+\newcommand{\dOld}{\d}
+\newcommand{\iOld}{\i}
+
+
+% Define useful shortcuts
+\renewcommand{\l}{\left}
+\renewcommand{\r}{\right}
+\newcommand{\f}{\frac}
+\newcommand{\tf}{\tfrac}
+\newcommand{\s}{\sqrt}
+\renewcommand{\t}{\text}
+\newcommand{\I}{\indices}
+
+\newcommand{\mb}{\ensuremath{\mathbb}}
+\newcommand{\mc}{\ensuremath{\mathcal}}
+\newcommand{\mf}{\ensuremath{\mathfrak}}
+\newcommand{\mh}{\ensuremath{\mathscr}}
+\newcommand{\mr}{\ensuremath{\mathrm}}
+\newcommand{\ms}{\ensuremath{\mathsf}}
+\newcommand{\mt}{\ensuremath{\mathtt}}
+\renewcommand{\v}[1]{\ensuremath{\bm{\mathbf{#1}}}}
+
+\renewcommand{\d}{\mr{d}}
+\renewcommand{\i}{\mr{i}}
+
+\newcommand{\ol}{\overline}
+\newcommand{\wt}{\widetilde}
+
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator{\Li}{Li}
+\DeclareMathOperator{\sech}{sech}
+\DeclareMathOperator{\csch}{csch}
+\DeclareMathOperator{\sdet}{SDet}
+
+\newcommand{\achtung}[1]{\vspace{1mm}\noindent{\color{red}\fbox{\fbox{\parbox{\textwidth}{\vspace*{-3mm}{\begin{center}\Large$\mf{Achtung!}$\end{center}} #1}}}}}
+
+\makeatletter
+\def\@cite#1#2{[\textbf{#1\if@tempswa , #2\fi}]}
+\def\@biblabel#1{[\textbf{#1}]}
+\makeatother
+
+
+%%% DOCUMENT PROPERTIES %%%
+
+\title{FHPC, Assignment 1: Report}
+\author{Matteo Poggi}
+\date{\today}
+\allowdisplaybreaks
+
+\numberwithin{equation}{section}
+
+% \theoremstyle{definition}
+\newtheorem{thm}{Theorem}
+\newtheorem{obs}[thm]{Observation}
+\newtheorem{remark}[thm]{Remark}
+
+%%% DOCUMENT %%%
+
+\begin{document}
+
+\maketitle
+
+\section{Theoretical Model}
+Let us denote by $N$ the number of iteration and by $P$ the number of cores. Then the contribution to the execution time $T(P, N)$ are the following:
+\begin{itemize}
+    \item $T_{\mr{read}}$: time to read numbers;
+    \item $(P-1)T_{\mr{comm.}}$: time to communicate to $P - 1$ slaves;
+    \item $\l(\l\lceil\f{N}{P}\r\rceil - 1\r)T_{\mr{comp.}}$: time for each core to compute the sum;
+    \item $(P-1)T_{\mr{comm.}}$: time to collect the result;
+    \item $(P-1)T_{\mr{comp.}}$: time to sum up all the partial results.
+\end{itemize}
+All in all we have
+\begin{equation}
+    T(P, N) = T_{\text{read}} + 2(P-1)T_{\text{comm.}} + \left(\l\lceil\frac{N}{P}\r\rceil+P-2\right)T_{\text{comp.}}\;.
+\end{equation}
+(There is a slight discrepancy with the text of the assignment, but it disappears for large $N$.) We will use the values shown in Table~\ref{tab:times}.
+
+\begin{table}[h]
+    \centering\begin{tabular}{lr}
+        \toprule
+        \textbf{time} & \textbf{value $[s]$} \\
+        \midrule
+        $T_{\mr{read}}$ & $10^{-4}$ \\
+        $T_{\mr{comm.}}$ & $10^{-6}$ \\
+        $T_{\mr{comp.}}$ & $2 \cdot 10^{-9}$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Value of various times in our cluster.}
+    \label{tab:times}
+\end{table}
+In Figure~\ref{fig:th_mod_1} we plot the function $T(P,N)$ for various value of $N$. For a fixed $N$ it is possible to seek for the minimum analytically (discarding the upper integer part): we have
+\begin{equation}
+    P_{\mr{min.}} \simeq \sqrt{N} \cdot \sqrt{\f{T_{\mr{comp.}}}{2T_{\mr{comm.}}+T_{\mr{comp.}}}}\;.
+\end{equation}
+\begin{figure}[h!]
+    \centering
+    \input{th_mod_1.pgf}
+    \caption{Theoretical model: parallel time. We can see the non-monotonous behavior which implies the existence of a $P_{\mr{min.}}$}
+    \label{fig:th_mod_1}
+\end{figure}
+In Figure~\ref{fig:th_mod_2} we show the analytical solution for $P_{\rm{min,}}$ against its effective value. The small discrepancies are due to the suppression of upper integer part.
+\begin{figure}[h!]
+    \centering
+    \input{th_mod_2.pgf}
+    \caption{Numerical and analytical value of $P_{\mr{min.}}$}
+    \label{fig:th_mod_2}
+\end{figure}
+\subsection{Scaling Analysis}
+We define the speedup function as
+\begin{equation}
+    S(P,N) = \f{T(1,N)}{T(P,N)}\;.
+\end{equation}
+In the perfect scaling limit one would have the linear relation $S(P,N) \sim P$. However this linear regime is spoiled by non linear effect of the overheads. This effect will become more important for larger and larger $P$. In order to develop an analytic intuition we can expand for ``small $P$'' (we will clarify later the meaning of ``small'').
+\begin{equation}
+    S(P,T) = s_1 P - s_2 P^2 + \mc{O}(P^3)\;,
+\end{equation}
+with
+\begin{equation}
+s_1 = \frac{T_{\text{read}}+(N-1)T_{\text{comp.}}}{N T_{\text{comp.}}}\;,\qquad s_2 = \frac{(T_{\text{read}}-2T_{\text{comm.}}-2T_{\text{comp.}})(T_{\text{read}}+(N-1)T_{\text{comp.}})}{N^2 T^2_{\text{comp.}}}\;.
+\end{equation}
+With our value of $T_{\mr{read}}$, $T_{\mr{comm.}}$ and $T_{\mr{comp.}}$ we have $s_1 > 0$ and $s_2 > 0$. The latter, in particular, tells us that the non-linearity has a worsening effect on our performances, as we expect. However this non-linearity will be negligible if $s_1 P \gg s_2 P^2$ that is if
+\begin{equation}
+    N \gg \f{T_{\mr{read}} - 2T_{\mr{comm.}} - 2T_{\mr{comp.}}}{T_{\mr{comp.}}}P\;.
+\end{equation}
+This gives an scale of smallness for $P$. With our values we have that the non-linearity effect are negligible if 
+\begin{equation}\label{eq:th_linearity}
+N \gg 4.9 \cdot\, 10^5 P.  
+\end{equation}
+The graph in Figure~\ref{fig:th_mod_3} reports in log-log scale the speedup factor for various values of $N$. From it one can understand when the linear regime is valid.
+
+\begin{figure}[htb]
+    \centering
+    \input{th_mod_3.pgf}
+    \caption{Speedup function computed for several values of $N$. Notice that this graph provide a nice way to verify the linearity relation~\eqref{eq:th_linearity}. For instance, with $P \simeq 10^3$ cores, the graph shows us that we need at least $N \sim 5 \cdot 10^9$ to scale linearly.}
+    \label{fig:th_mod_3}
+\end{figure}
+
+\subsection{Attempt of improvement}
+Perhaps it is possible to save some communication time. The ideas are basically two:
+\begin{itemize}
+    \item  One can share a variable with the slave process. Every process does know in which location of the variable it can write. So the end communication can be done all at once in a time $T_{\text{comm.}}$;
+    \item Even at the beginning, after the master have read all the numbers perhaps it can communicate those number to each slave (almost) simultaneously.
+\end{itemize}    
+All in all the new time is
+\begin{equation}
+\tilde{T}(P,N) = T_{\text{read}} + 2T_{\text{comm.}} + \left(\left\lceil\frac{N}{P}\right\rceil+P-2\right)T_{\text{comp.}}\;.
+\end{equation}
+In this case it is easy to see that the minimum is attained at $P_{\mr{min.}} \simeq \sqrt{N}$. In Figure~\ref{fig:th_mod_4} a graph is plotted to compare the best value of $P$ in function of $N$. Notice that since the overhead time does not scale with $P$ in this case, we have that $P_{\text{min.}}^{\text{(improved)}} > P_{\text{min.}}^{\text{(naive)}}$. In Figure~\ref{fig:th_mod_5} we see that the improved model perform better than the naive one expecially for higher values of $N$. However, as we noticed just before, the number of processors required to minimize the time, in the improved model in quite higher: with our numbers probably is much more convenient to wait $\sim 10^{-2}\,\text{s}$ more than to buy $\sim 10^6$ cores. 
+\begin{figure}[htbp]
+    \centering
+    \input{th_mod_4.pgf}
+    \caption{Comparison between naive and refined algorithm.}
+    \label{fig:th_mod_4}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \hspace*{-1cm}
+    \input{th_mod_5.pgf}
+    \caption{Performance of naive and improved model, compared}
+    \label{fig:th_mod_5}
+\end{figure}
+
+\section{\texttt{MPI} analysis}
+All through this section we will measure time in two ways:
+\begin{description}
+    \item[walltime]: this is the time measured internally by the programs, both serial and parallel one. Of course every processor will have its own time. We will consider the maximum among all the processors.
+    \item[elapsed]: this is the time as measured by the command \texttt{/usr/bin/time}. The command provide use three times: \texttt{user}, \texttt{system} and \texttt{elapsed}. We will consider the last one.
+\end{description}
+On top of that all the result reported hereafter are the average of the various run and the error is the maximum deviation.
+
+We we will deal with speedup we will use the definition
+\begin{equation}
+    S(P, N) = \f{T_{\text{serial}(N)}}{T_{\text{parallel}}(P,N)}\;,
+\end{equation}
+where for the serial time we used the serial launch for $N= 10^8, 10^0, 10^{10}, 10^{11}$. It is also interesting to compare the $T_{\text{serial}}(N)$ and $T_{\text{parallel}}(1, N)$: this is done in Table~\ref{tab:serial_parallel}. Notice that either serial time is a little lower than the parallel time or they are compatible within their error. More details of this kind of analysis can be found in Subsection~\ref{subsec:overhead}.
+
+\begin{table}[htbp]
+    \centering\begin{tabular}{lrlrl}
+        \toprule
+        $N$ & \multicolumn{2}{c}{$T_{\text{serial}}^{\text{(wall)}}(N)$ [s]} & \multicolumn{2}{c}{$T_{\text{parallel}}^{\text{(wall)}}(1,N)$ [s]}\\
+        \midrule
+        $10^8   $ & $   2.56$&            & $   2.86$&$\pm  0.09$ \\
+        $10^9   $ & $  25.74$&$\pm  0.13$ & $  25.71$&$\pm  0.04$ \\
+        $10^{10}$ & $ 256.73$&$\pm  0.60$ & $ 257.50$&$\pm  0.70$ \\
+        $10^{11}$ & $2601.56$&$\pm 86.55$ & $2585.26$&$\pm 36.25$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Comparison between serial and parallel walltimes.}
+    \label{tab:serial_parallel}
+\end{table}
+
+\subsection{Strong}
+In the strong scaling experiments we run the parallel program for $N = 10^8, 10^9, 10^{10}, 10^{11}$ on $P = 1, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48$ cores, three times each. 
+\begin{itemize}
+    \item In Figure~\ref{fig:strong_a} we plot the absolute timing on semilog scale with error bars;
+    \item in Figure~\ref{fig:strong_s} we plot the speedup in linear scale;
+    \item in Figure~\ref{fig:strong_sum} we plot the speedup comparing the various $N$ on the same graph
+\end{itemize}
+ We notice that while for lower $N$ walltime and elapsed time have does not overlap (expecially for larger value of $P$), the situation is very different for higher values of $N$, where the two curves tend to coincide. This can be due to the fact that for low $N$ times are very short and there can be some overhead in the execution of other function of the program (not the parallel overhead) which tends to disappear when we increase the number of iterations.
+
+ As far as the speedup is concerned we notice that again for lower values of $N$ the walltime and elapsed time scalabilities tend to differ, while for higher values of $N$ they tend to coincides. They also tend to coincide with the perfect scalability limit. This phenomenon is expected as of the theoretical model above; it is the benchmark of the the parallel overhead.
+
+\begin{figure}[htbp]
+    \centering
+    \input{strong_a.pgf}
+    \caption{Absolute timing.}
+    \label{fig:strong_a}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \input{strong_s.pgf}
+    \caption{Speedup.}
+    \label{fig:strong_s}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \input{strong_sum.pgf}
+    \caption{Speedup: summary.}
+    \label{fig:strong_sum}
+\end{figure}
+
+\subsection{Parallel Overhead}\label{subsec:overhead}
+From the teoretical model above we can identify the parallel overhead as
+\begin{equation}
+    T_{\text{overhead}}(P,N) = P \cdot T_{\text{parallel}}(P, N) - P_{\text{serial}}(N)\;.
+\end{equation}
+The results are plotted in Figure~\ref{fig:overhead}. We notice that the overhead grows as $P$ grows, which is expected from the model.
+
+\begin{figure}[h!]
+    \centering
+    \input{overhead.pgf}
+    \caption{Overhead time. Notice that the curve for $N = 10^{11}$ is particularly affected by errors, especially for lower values of $N$.}
+    \label{fig:overhead}
+\end{figure}
+
+We can also notice, especially from the walltime graph that the overhead depend also on $N$. We see, in the right part of the graph (the cleaner one) that $T_{\text{overhead}}(P,N) \sim N$ for a certain $P$. This points to the direction that, apart from communication time, there is a slowdown of performance when the parallel program is run.
+
+\subsection{Weak}
+In the weak scaling experiments we run the parallel program for $N = 10^8, 10^9, 10^{10}$ on $P = 1, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48$ cores and for $N = 10^{11}$ on $P= 1, 12, 24, 48$ cores, three times each. 
+\begin{itemize}
+    \item In Figure~\ref{fig:weak_a} we plot the absolute timing on semilog scale with error bars;
+    \item in Figure~\ref{fig:weak_s} we plot the speedup in linear scale;
+    \item in Figure~\ref{fig:weak_sum} we plot the speedup comparing the various $N$ on the same graph
+\end{itemize}
+As for the strong case we notice that for lower values of $N$ the walltime and elapsed time are distinct; their difference tend to disappear for larger values of $N$. If scalability were perfect we would observe a flat graph. Instead we notice that, apart for a point at $N=10^{10}$ and $P=24$ the curves are monotonously increasing. This is the benchmark of the overhead in communication time.
+As a direct consequence the speedup curves are not constant and equal to $1$.
+
+Let us now try to explain that ``spike'', located at $N=10^{10}$ and $P=24$. During the experiment several \texttt{MPI} errors occurred. These error where spoiling the result and we were forced to run the script again. Usually I decided to make a new set of measurement. In that case that was not possible (the queue on the cluster was very long) and so I did only some measurement of $N=10^{10}$ and $P=24$. I noticed that this last measure was done on a certain node, while the rest on another node (both gpunodes). I do not know how much changing noted (they are supposed to be identical twin) can make the difference. This is however what I noticed.
+
+\begin{figure}[htbp]
+    \centering
+    \input{weak_sum.pgf}
+    \caption{Speedup: summary.}
+    \label{fig:weak_sum}
+\end{figure}   
+
+\begin{figure}[htbp]
+    \centering
+    \input{weak_a.pgf}
+    \caption{Absolute timing. Notice that there is a misbehaving for $N=10^{10}$ and $P=24$. In the other points the curves are monotonous within the errors.}
+    \label{fig:weak_a}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \input{weak_s.pgf}
+    \caption{Speedup.}
+    \label{fig:weak_s}
+\end{figure}
+ 
+\end{document}

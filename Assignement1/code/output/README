@@ -1,0 +1,12 @@
+All the steps are done loading the module openmpi/4.0.3/gnu/9.3.0
+
+To compile the serial version I used
+gcc -o pi.x pi.c
+
+To compile the parallel version I used
+mpicc -o mpi_pi.x mpi_pi.c
+
+To run the paralle version I used inside the scripts
+mpirun  --mca btl '^openib' -np <procs> mpi_pi.x
+
+The sources were not modified at all since I began the run after the first version of the assignment in which any modification was forbidden.
