@@ -47,11 +47,12 @@ int main( int argc, char **argv )
   {   
     
     int my_thread_id = omp_get_thread_num();
-   #pragma omp master
+    #pragma omp master
     nthreads = omp_get_num_threads();
    #pragma omp barrier                           // let all the threads to read
 						 //   the correct value of nthreads
-    
+
+    // printf("[THREAD %d] nthreads = %d\n", omp_get_thread_num(), nthreads);
    #pragma omp for ordered                       // declare a for within which there
     for ( int i = 0; i < nthreads; i++)          //   are ordered regions
      #pragma omp ordered                         // declare the ordered region
