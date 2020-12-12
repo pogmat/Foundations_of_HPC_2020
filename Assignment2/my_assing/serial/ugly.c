@@ -4,6 +4,9 @@
 #include "../pgm/pgm_bin.h"
 #include "../kernel/kernel.h"
 
+static inline int max(const int a, const int b) {return ((a < b) ? b : a);}
+static inline int min(const int a, const int b) {return ((a < b) ? a : b);}
+
 int blur_pgm(const pgm_file* const original,
 	     const kernel_t* const kernel,
 	     pgm_file* const new)
@@ -23,47 +26,39 @@ int blur_pgm(const pgm_file* const original,
 	}
 
 	register int s = kernel->s;
-	register int new_value;
+	register real new_value;
 	
 	if (original->maximum_value > 255) {
-		unsigned short* new_p = (unsigned short*)new->data;
-		unsigned short* original_p = (unsigned short*)original->data;
+		unsigned short* n_p = (unsigned short*)new->data;
+		unsigned short* o_p = (unsigned short*)original->data;
+		real* k_p = kernel->kernel;
 
-		for (int i = 0; i < w; ++i)
-			for (int j = 0; j < h; ++j) {
-				new_value = 0;
-				for (int a = -s; a <= s; ++a)
-					for (int b = -s; b <= s; ++b) {
-						if (((i + a) >= 0) &&
-						    ((i + a) <  w) &&
-						    ((j + b) >= 0) &&
-						    ((j + b) <  h)) {
-							new_value +=(unsigned int)
-								(kernel->kernel[(a + s) + (b + s) * (2 * s + 1)]
-								* original_p[(i + a) + (j + b) * w] + 0.5);
-						}
-					}
-				new_p[i + j * w] = (unsigned short)(new_value > 255 ? 255 : new_value);
-			}	       
+		for (int i = 0; i < h; ++i)
+			for (int j = 0; j < w; ++j) {
+				new_value = 0.0;
+				for (int a = max(0, i - s); a < min(h, i + s + 1); ++a)
+					for (int b = max(0, j - s); b < min(w, j + s +1); ++b)
+						new_value +=
+							o_p[b + w * a] * k_p[b - j + s + (2 * s +1) * (a - i + s)];
+				n_p[j + w * i] = (unsigned short)min(65535, (int)(new_value + 0.5));
+			}		
+
 	} else {
-		for (int i = 0; i < w; ++i)
-			for (int j = 0; j < h; ++j) {
-				new_value = 0;
-				for (int a = -s; a <= s; ++a)
-					for (int b = -s; b <= s; ++b) {
-						if (((i + a) >= 0) &&
-						    ((i + a) <  w) &&
-						    ((j + b) >= 0) &&
-						    ((j + b) <  h)) {
-							new_value +=(unsigned int)
-								(kernel->kernel[(a + s) + (b + s) * (2 * s + 1)]
-								* original->data[(i + a) + (j + b) * w] + 0.5);
-						}
-					}
-				new->data[i + j * w] = (byte)(new_value > 255 ? 255 : new_value);
-				}
+		byte* n_p = new->data;u
+		byte* o_p = original->data;
+		real* k_p = kernel->kernel;
+
+		for (int i = 0; i < h; ++i)
+			for (int j = 0; j < w; ++j) {
+				new_value = 0.0;
+				for (int a = max(0, i - s); a < min(h, i + s + 1); ++a)
+					for (int b = max(0, j - s); b < min(w, j + s +1); ++b)
+						new_value +=
+							o_p[b + w * a] * k_p[b - j + s + (2 * s +1) * (a - i + s)];
+				n_p[j + w * i] = (byte)min(255, (int)(new_value + 0.5));
+			}
 	}
-	
+     	
 	return 0;
 }
 
