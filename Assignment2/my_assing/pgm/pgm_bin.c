@@ -39,7 +39,7 @@ void skip_comment(FILE * const fp)
 int read_pgm(const char* const filename, pgm_file* const pgm)
 {
 	FILE* fp = fopen(filename, "rb");
-	unsigned long int bytes_data;
+	size_t bytes_data;
 	size_t read_b;
 	
 	if (fp == NULL) {
@@ -123,4 +123,10 @@ int write_pgm(const char* const filename, const pgm_file* const pgm)
 	fclose(fp);
 
 	return 0;
+}
+
+void free_pgm(pgm_file* const pgm)
+{
+	free(pgm->data);
+	pgm->data = NULL;
 }

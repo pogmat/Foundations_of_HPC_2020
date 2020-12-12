@@ -28,6 +28,8 @@ int main(int argc, char** argv)
 
 	if (write_pgm(argv[2], &my_pgm))
 		return 1;
+
+	free_pgm(&my_pgm);
 	
 	return 0;
 }       

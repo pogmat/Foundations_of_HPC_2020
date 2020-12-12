@@ -20,5 +20,6 @@ typedef struct {
 
 int read_pgm(const char* const, pgm_file* const);
 int write_pgm(const char* const, const pgm_file* const);
+void free_pgm(pgm_file* const);
 
 #endif
