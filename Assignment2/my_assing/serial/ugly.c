@@ -44,7 +44,7 @@ int blur_pgm(const pgm_file* const original,
 			}		
 
 	} else {
-		byte* n_p = new->data;u
+		byte* n_p = new->data;
 		byte* o_p = original->data;
 		real* k_p = kernel->kernel;
 

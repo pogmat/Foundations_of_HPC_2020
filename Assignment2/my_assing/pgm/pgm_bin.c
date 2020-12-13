@@ -39,8 +39,6 @@ void skip_comment(FILE * const fp)
 int read_pgm(const char* const filename, pgm_file* const pgm)
 {
 	FILE* fp = fopen(filename, "rb");
-	size_t bytes_data;
-	size_t read_b;
 	
 	if (fp == NULL) {
 		fprintf(stderr, "No such file: %s\n", filename);
@@ -73,23 +71,37 @@ int read_pgm(const char* const filename, pgm_file* const pgm)
 		return -1;
 	}
 	skip_comment(fp);
-	
-	bytes_data = ((pgm->maximum_value > 255) ? 2 : 1) * pgm->width * pgm->height;
 
-	pgm->data = (byte*)malloc(bytes_data * sizeof(byte));
+	int two_bytes = pgm->maximum_value > 255;
+	size_t img_size = (two_bytes ? 2 : 1) * pgm->width * pgm->height;
+	byte word[2] ={7, 5};
+
+	pgm->data = (byte*)malloc(img_size);
 	if (!pgm->data) {
 		fprintf(stderr, "Bad allocation.\n");
 		fclose(fp);
 		return -1;
 	}
 	
-	read_b = fread(pgm->data, sizeof(byte), bytes_data, fp);
-	if (read_b != bytes_data) {
-		fprintf(stderr, "Invalid format: the file is corrupted.\n");
-		fclose(fp);
-		return -1;
+	for (size_t read_b = 0; read_b < (img_size / 2) * 2; read_b += 2) {
+		if (!(fread(word, 2, 1, fp))) {
+			fprintf(stderr, "Invalid format: the file is corrupted\n");
+			fclose(fp);
+			return -1;
+		}
+
+		pgm->data[read_b] = two_bytes ? word[1] : word[0];
+		pgm->data[read_b + 1] = two_bytes ? word[0] : word[1];
 	}
 
+	if (img_size % 2) {
+		if (!fread(pgm->data + img_size - 1, 1, 1, fp)) {
+			fprintf(stderr, "Invalid format: the file is corrupted.\n");
+			fclose(fp);
+			return -1;
+		}
+	}
+	
 	fclose(fp);
 	
 	return 0;
@@ -98,8 +110,6 @@ int read_pgm(const char* const filename, pgm_file* const pgm)
 int write_pgm(const char* const filename, const pgm_file* const pgm)
 {
 	FILE* fp = fopen(filename, "wb");
-	unsigned long bytes_data;
-	size_t written_b;
 
 	if (fp == NULL) {
 		fprintf(stderr, "Bad file creation: %s.\n", filename);
@@ -111,15 +121,29 @@ int write_pgm(const char* const filename, const pgm_file* const pgm)
 		fclose(fp);
 	}
 
-	bytes_data = ((pgm->maximum_value > 255) ? 2 : 1) * pgm->width * pgm->height;
+	int two_bytes = pgm->maximum_value > 255;
+	size_t img_size = (two_bytes ? 2 : 1) * pgm->width * pgm->height;
+	byte word[2];
 
-	written_b = fwrite(pgm->data, sizeof(byte), bytes_data, fp);
-	if (written_b != bytes_data) {
-		fprintf(stderr, "Impossible to write file data.\n");
-		fclose(fp);
-		return -1;
+	for (size_t written_b = 0; written_b < (img_size / 2) * 2; written_b += 2) {
+		word[0] = two_bytes ? pgm->data[written_b + 1] : pgm->data[written_b];
+		word[1] = two_bytes ? pgm->data[written_b] : pgm->data[written_b + 1];
+
+		if (fwrite(word, 1, 2, fp) != 2) {
+			fprintf(stderr, "Impossible to write file data.\n");
+			fclose(fp);
+			return -1;
+		}
 	}
-		
+
+	if (img_size % 2) {
+		if (!fwrite(pgm->data + img_size -1, 1, 1, fp)) {
+			fprintf(stderr, "Impossible to write file data.\n");
+			fclose(fp);
+			return -1;
+		}		
+	}
+      	
 	fclose(fp);
 
 	return 0;
