@@ -7,7 +7,7 @@ TESTOBJ = $(TESTSRC:.c=.o)
 TESTTRG = $(TESTSRC:.c=.x)
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Wpedantic
+CFLAGS = -Wall -Wextra -Wpedantic -march=native -O3
 LDFLAGS =
 
 $(OBJECT): $(SOURCE) $(HEADER)

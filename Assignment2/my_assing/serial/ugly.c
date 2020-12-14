@@ -16,7 +16,7 @@ int blur_pgm(const pgm_file* const original,
 	register int h = new->height = original->height;
 	new->maximum_value = original->maximum_value;
 
-        size_t bytes_data = ((original->maximum_value > 255) ? 2 : 1)
+        size_t bytes_data = ((original->maximum_value > UINT8_MAX) ? 2 : 1)
 		* original->width * original->height;
 
 	new->data = (byte*)malloc(bytes_data * sizeof(byte));
@@ -28,9 +28,9 @@ int blur_pgm(const pgm_file* const original,
 	register int s = kernel->s;
 	register real new_value;
 	
-	if (original->maximum_value > 255) {
-		unsigned short* n_p = (unsigned short*)new->data;
-		unsigned short* o_p = (unsigned short*)original->data;
+	if (original->maximum_value > UINT8_MAX) {
+		dbyte* n_p = (dbyte*)new->data;
+		dbyte* o_p = (dbyte*)original->data;
 		real* k_p = kernel->kernel;
 
 		for (int i = 0; i < h; ++i)
@@ -40,7 +40,7 @@ int blur_pgm(const pgm_file* const original,
 					for (int b = max(0, j - s); b < min(w, j + s +1); ++b)
 						new_value +=
 							o_p[b + w * a] * k_p[b - j + s + (2 * s +1) * (a - i + s)];
-				n_p[j + w * i] = (unsigned short)min(65535, (int)(new_value + 0.5));
+				n_p[j + w * i] = (dbyte)min(UINT16_MAX, (uint64_t)(new_value + 0.5));
 			}		
 
 	} else {
@@ -55,7 +55,7 @@ int blur_pgm(const pgm_file* const original,
 					for (int b = max(0, j - s); b < min(w, j + s +1); ++b)
 						new_value +=
 							o_p[b + w * a] * k_p[b - j + s + (2 * s +1) * (a - i + s)];
-				n_p[j + w * i] = (byte)min(255, (int)(new_value + 0.5));
+				n_p[j + w * i] = (byte)min(UINT8_MAX, (uint64_t)(new_value + 0.5));
 			}
 	}
      	

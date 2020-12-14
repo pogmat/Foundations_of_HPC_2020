@@ -8,7 +8,10 @@
 #ifndef _PGM_BIN_H
 #define _PGM_BIN_H
 
-typedef unsigned char byte;
+#include <stdint.h>
+
+typedef uint8_t byte;
+typedef uint16_t dbyte;
 
 typedef struct {
 	char magic[3];

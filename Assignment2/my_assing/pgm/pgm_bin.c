@@ -72,9 +72,9 @@ int read_pgm(const char* const filename, pgm_file* const pgm)
 	}
 	skip_comment(fp);
 
-	int two_bytes = pgm->maximum_value > 255;
+	int two_bytes = pgm->maximum_value > UINT8_MAX;
 	size_t img_size = (two_bytes ? 2 : 1) * pgm->width * pgm->height;
-	byte word[2] ={7, 5};
+	byte word[2];
 
 	pgm->data = (byte*)malloc(img_size);
 	if (!pgm->data) {
@@ -121,7 +121,7 @@ int write_pgm(const char* const filename, const pgm_file* const pgm)
 		fclose(fp);
 	}
 
-	int two_bytes = pgm->maximum_value > 255;
+	int two_bytes = pgm->maximum_value > UINT8_MAX;
 	size_t img_size = (two_bytes ? 2 : 1) * pgm->width * pgm->height;
 	byte word[2];
 

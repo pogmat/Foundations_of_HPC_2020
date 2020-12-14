@@ -4,7 +4,7 @@ KERNEL_DIR = ../kernel
 KERNEL_OBJ = kernel.o
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Wpedantic
+CFLAGS = -Wall -Wextra -Wpedantic -march=native -O3
 LDFLAGS =
 
 .PHONY: ugly
