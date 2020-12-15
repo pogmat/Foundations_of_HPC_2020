@@ -10,6 +10,12 @@
 #include <malloc.h>
 #include "pgm_bin.h"
 
+#if ((0x100 & 0xf) == 0x0)
+#define ENDIAN_SWAP 1
+#else
+#define ENDIAN_SWAP 0
+#endif
+
 void skip_comment(FILE * const fp)
 {
 	int ch;
@@ -73,29 +79,36 @@ int read_pgm(const char* const filename, pgm_file* const pgm)
 	skip_comment(fp);
 
 	int two_bytes = pgm->maximum_value > UINT8_MAX;
-	size_t img_size = (two_bytes ? 2 : 1) * pgm->width * pgm->height;
+	size_t img_elements = pgm->width * pgm->height;
 	byte word[2];
 
-	pgm->data = (byte*)malloc(img_size);
-	if (!pgm->data) {
-		fprintf(stderr, "Bad allocation.\n");
-		fclose(fp);
-		return -1;
-	}
-	
-	for (size_t read_b = 0; read_b < (img_size / 2) * 2; read_b += 2) {
-		if (!(fread(word, 2, 1, fp))) {
-			fprintf(stderr, "Invalid format: the file is corrupted\n");
+	if (two_bytes && ENDIAN_SWAP) {
+		pgm->data = (byte*)malloc(img_elements * sizeof(dbyte));
+		if (!pgm->data) {
+			fprintf(stderr, "Bad allocation.\n");
 			fclose(fp);
 			return -1;
 		}
 
-		pgm->data[read_b] = two_bytes ? word[1] : word[0];
-		pgm->data[read_b + 1] = two_bytes ? word[0] : word[1];
-	}
+		for (size_t read_e = 0; read_e < img_elements; ++read_e) {
+			if (!fread(word, sizeof(dbyte), 1, fp)) {
+				fprintf(stderr, "Invalid format: the file is corrupted.\n");
+				fclose(fp);
+				return -1;
+			}
 
-	if (img_size % 2) {
-		if (!fread(pgm->data + img_size - 1, 1, 1, fp)) {
+			pgm->data[2 * read_e] = word[1];
+			pgm->data[2 * read_e + 1] = word[0];
+		}
+	} else {
+		pgm->data = (byte*)malloc(img_elements * sizeof(byte));
+		if (!pgm->data) {
+			fprintf(stderr, "Bad allocation.\n");
+			fclose(fp);
+			return -1;
+		}
+
+		if (!fread(pgm->data, sizeof(byte), img_elements, fp)) {
 			fprintf(stderr, "Invalid format: the file is corrupted.\n");
 			fclose(fp);
 			return -1;
@@ -122,28 +135,29 @@ int write_pgm(const char* const filename, const pgm_file* const pgm)
 	}
 
 	int two_bytes = pgm->maximum_value > UINT8_MAX;
-	size_t img_size = (two_bytes ? 2 : 1) * pgm->width * pgm->height;
+	size_t img_elements = pgm->width * pgm->height;
 	byte word[2];
 
-	for (size_t written_b = 0; written_b < (img_size / 2) * 2; written_b += 2) {
-		word[0] = two_bytes ? pgm->data[written_b + 1] : pgm->data[written_b];
-		word[1] = two_bytes ? pgm->data[written_b] : pgm->data[written_b + 1];
-
-		if (fwrite(word, 1, 2, fp) != 2) {
+	if (two_bytes && ENDIAN_SWAP) {
+		for (size_t written_e = 0; written_e < img_elements; ++written_e) {
+			//buffer = ENDIAN_ADJUST(((dbyte*)pgm->data)[written_b]);
+			word[0] = pgm->data[2 * written_e + 1];
+			word[1] = pgm->data[2 * written_e];
+			if (!fwrite(word, sizeof(dbyte), 1, fp)) {
+				fprintf(stderr, "Impossible to write file data.\n");
+				fclose(fp);
+				return -1;
+			}
+			
+		}
+	} else {
+		if (!fwrite(pgm->data, sizeof(byte), img_elements, fp)) {
 			fprintf(stderr, "Impossible to write file data.\n");
 			fclose(fp);
 			return -1;
 		}
 	}
-
-	if (img_size % 2) {
-		if (!fwrite(pgm->data + img_size -1, 1, 1, fp)) {
-			fprintf(stderr, "Impossible to write file data.\n");
-			fclose(fp);
-			return -1;
-		}		
-	}
-      	
+	
 	fclose(fp);
 
 	return 0;
