@@ -62,6 +62,27 @@ int blur_pgm(const pgm_file* const original,
 	return 0;
 }
 
+void remove_vignetting_inplace(const pgm_file* const original,
+			       const kernel_t* const kernel)
+// WARNING: If we want to do the implace trasformation without allocate further memory
+//	    we cannot declare const byte* data. Then without this const it is of course
+//          possible to modify data even if the pgm_file is pass as const.
+{
+	// NOTE: we split the boder in 4 stripes + 4 corners:
+	//       for the stripes the renormalization factor has to be computed only once,
+	//       for corners has to be computed for every pixel.
+
+	int w = original->width;
+	int h = original->height;
+	int halo = kernel->s;
+	real normalization;
+
+	// Top
+	for (int i = 0; i < halo; ++i) {
+		//normalization = get_partial_luminosity(...)
+	}
+}
+
 int main(int argc, char** argv)
 {
 	if (argc != 4) {
