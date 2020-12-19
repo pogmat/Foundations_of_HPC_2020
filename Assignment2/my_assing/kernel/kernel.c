@@ -92,7 +92,22 @@ real get_luminosity(const kernel_t* const k)
 	return luminosity;
 }
 
-void normalize_luminosity(kernel_t* const k, real norm)
+real get_partial_luminosity(const kernel_t* const k,
+			    const int top,
+			    const int bottom,
+			    const int left,
+			    const int right)
+{
+	real luminosity = 0;
+	int kernel_width = 2 * k->s + 1;
+	for (int i = top + (int)k->s; i <= bottom + (int)k->s; ++i)
+		for (int j = left + (int)k->s; j <= right + (int)k->s; ++j)
+			luminosity += k->kernel[j + kernel_width * i];
+       
+	return luminosity;
+}
+
+void normalize_luminosity(kernel_t* const k, const real norm)
 {
 	real luminosity = get_luminosity(k);
 	real ratio = norm / luminosity;
