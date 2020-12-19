@@ -62,11 +62,14 @@ int blur_pgm(const pgm_file* const original,
 	return 0;
 }
 
-void remove_vignetting_inplace(const pgm_file* const original,
-			       const kernel_t* const kernel)
+int remove_vignetting_inplace(const pgm_file* const original,
+			      const kernel_t* const kernel)
 // WARNING: If we want to do the implace trasformation without allocate further memory
 //	    we cannot declare const byte* data. Then without this const it is of course
 //          possible to modify data even if the pgm_file is pass as const.
+
+
+// THINK:   Perhaps it would be better to normalize every pixel directly inside blur.
 {
 	// NOTE: we split the boder in 4 stripes + 4 corners:
 	//       for the stripes the renormalization factor has to be computed only once,
@@ -75,12 +78,217 @@ void remove_vignetting_inplace(const pgm_file* const original,
 	int w = original->width;
 	int h = original->height;
 	int halo = kernel->s;
-	real normalization;
+	real total_luminosity = get_luminosity(kernel);
+	real luminosity;
 
-	// Top
-	for (int i = 0; i < halo; ++i) {
-		//normalization = get_partial_luminosity(...)
+        if (original->maximum_value > UINT8_MAX) {
+		dbyte* o_p = (dbyte*)original->data;
+		
+		// Top
+		for (int i = halo - 1; i >= 0; --i) {
+			luminosity = get_partial_luminosity(kernel, max(-halo, -i), min(halo, h - i - 1), -halo, halo);
+			if (!luminosity)
+				return -1;
+			for (int j = halo; j < w - halo; ++j) {
+				o_p[i * w + j] = (uint16_t)min(UINT16_MAX,
+							       (o_p[i * w + j] *  total_luminosity / luminosity + 0.5));
+			}
+		}
+		
+		// Bottom
+		// the max here is to prevent overlap with the Top vignetting removal
+		for (int i = max(h - halo, halo); i < h; ++i) {
+			luminosity = get_partial_luminosity(kernel, max(-halo, -i), min(halo, h - i - 1), -halo, halo);
+			if (!luminosity)
+				return -1;
+			for (int j = halo; j < w - halo; ++j)
+				o_p[i * w + j] = (uint16_t)min(UINT16_MAX,
+							       (o_p[i * w + j] *  total_luminosity / luminosity + 0.5));
+		}
+
+		// Left
+		for (int j = halo - 1; j >= 0; --j) {
+			luminosity = get_partial_luminosity(kernel, -halo, halo, max(-halo, -j), min(halo, w - j - 1));
+			if (!luminosity)
+				return -1;
+			for (int i = halo; i < h - halo; ++i)
+				o_p[i * w + j] = (uint16_t)min(UINT16_MAX,
+							       (o_p[i * w + j] *  total_luminosity / luminosity + 0.5));
+		}
+
+		// Right
+		// the max here is to prevent overlap with the Bottom vignetting removal
+		for (int j = max(w - halo, halo); j < w; ++j) {
+			luminosity = get_partial_luminosity(kernel, -halo, halo, max(-halo, -j), min(halo, w - j - 1));
+			if (!luminosity)
+				return -1;
+			for (int i = halo; i < h - halo; ++i)
+				o_p[i * w + j] = (uint16_t)min(UINT16_MAX,
+						     (o_p[i * w + j] *  total_luminosity / luminosity + 0.5));
+	       	}
+	     
+		// Corners
+		int top, bottom;
+		int i_second_min = max(h - halo, halo);	// to avoid overlap with other corners
+		int j_second_min = max(w - halo, halo); // to avoid overlap with other corners
+		for (int i = 0; i < halo; ++i) {
+			top = max(-halo, -i);
+			bottom = min(halo, h - i - 1);
+			for (int j = 0; j < halo; ++j) {
+				luminosity =  get_partial_luminosity(kernel,
+								     top,
+								     bottom,
+								     max(-halo, -j),
+								     min(halo, w - j - 1));
+				if (!luminosity)
+					return -1;
+				o_p[i * w + j] = (uint16_t)min(UINT16_MAX,
+							       (o_p[i * w + j] * total_luminosity / luminosity + 0.5));
+			}
+			for (int j = j_second_min; j < w; ++j) {
+				luminosity =  get_partial_luminosity(kernel,
+								     top,
+								     bottom,
+								     max(-halo, -j),
+								     min(halo, w - j - 1));
+				if (!luminosity)
+					return -1;
+				o_p[i * w + j] = (uint16_t)min(UINT16_MAX,
+							       (o_p[i * w + j] * total_luminosity / luminosity + 0.5));
+			}
+		     		}
+		for (int i = i_second_min; i < h; ++i) {
+			top = max(-halo, -i);
+			bottom = min(halo, h - i - 1);
+			for (int j = 0; j < halo; ++j) {
+				luminosity =  get_partial_luminosity(kernel,
+								     top,
+								     bottom,
+								     max(-halo, -j),
+								     min(halo, w - j - 1));
+				if (!luminosity)
+					return -1;
+				o_p[i * w + j] = (uint16_t)min(UINT16_MAX,
+							       (o_p[i * w + j] * total_luminosity / luminosity + 0.5));
+			}
+			for (int j = j_second_min; j < w; ++j) {
+				luminosity =  get_partial_luminosity(kernel,
+								     top,
+								     bottom,
+								     max(-halo, -j),
+								     min(halo, w - j - 1));
+				if (!luminosity)
+					return -1;
+				o_p[i * w + j] = (uint16_t)min(UINT16_MAX,
+							       (o_p[i * w + j] * total_luminosity / luminosity + 0.5));
+			}
+		}
+	} else {
+		byte* o_p = original->data;
+
+		// Top
+		for (int i = halo - 1; i >= 0; --i) {
+			luminosity = get_partial_luminosity(kernel, max(-halo, -i), min(halo, h - i - 1), -halo, halo);
+			if (!luminosity)
+				return -1;
+			for (int j = halo; j < w - halo; ++j) {
+				o_p[i * w + j] = (uint8_t)min(UINT8_MAX,
+							      (o_p[i * w + j] *  total_luminosity / luminosity + 0.5));
+			}
+		}
+
+		// Bottom
+		// the max here is to prevent overlap with the Top vignetting removal
+		for (int i = max(h - halo, halo); i < h; ++i) {
+			luminosity = get_partial_luminosity(kernel, max(-halo, -i), min(halo, h - i - 1), -halo, halo);
+			if (!luminosity)
+				return -1;
+			for (int j = halo; j < w - halo; ++j)
+				o_p[i * w + j] = (uint8_t)min(UINT8_MAX,
+							      (o_p[i * w + j] *  total_luminosity / luminosity + 0.5));
+		}
+
+		// Left
+		for (int j = halo - 1; j >= 0; --j) {
+			luminosity = get_partial_luminosity(kernel, -halo, halo, max(-halo, -j), min(halo, w - j - 1));
+			if (!luminosity)
+				return -1;
+			for (int i = halo; i < h - halo; ++i)
+				o_p[i * w + j] = (uint8_t)min(UINT8_MAX,
+							      (o_p[i * w + j] *  total_luminosity / luminosity + 0.5));
+		}
+
+		// Right
+		// the max here is to prevent overlap with the Bottom vignetting removal
+		for (int j = max(w - halo, halo); j < w; ++j) {
+			luminosity = get_partial_luminosity(kernel, -halo, halo, max(-halo, -j), min(halo, w - j - 1));
+			if (!luminosity)
+				return -1;
+			for (int i = halo; i < h - halo; ++i)
+				o_p[i * w + j] = (uint8_t)min(UINT8_MAX,
+							      (o_p[i * w + j] *  total_luminosity / luminosity + 0.5));
+	       	}
+
+		// Corners
+		int top, bottom;
+		int i_second_min = max(h - halo, halo);	// to avoid overlap with other corners
+		int j_second_min = max(w - halo, halo); // to avoid overlap with other corners
+		for (int i = 0; i < halo; ++i) {
+			top = max(-halo, -i);
+			bottom = min(halo, h - i - 1);
+			for (int j = 0; j < halo; ++j) {
+				luminosity =  get_partial_luminosity(kernel,
+								     top,
+								     bottom,
+								     max(-halo, -j),
+								     min(halo, w - j - 1));
+				if (!luminosity)
+					return -1;
+				o_p[i * w + j] = min(UINT8_MAX,
+						     (uint8_t)(o_p[i * w + j] * total_luminosity / luminosity + 0.5));
+			}
+			for (int j = j_second_min; j < w; ++j) {
+				luminosity =  get_partial_luminosity(kernel,
+								     top,
+								     bottom,
+								     max(-halo, -j),
+								     min(halo, w - j - 1));
+				if (!luminosity)
+					return -1;
+				o_p[i * w + j] = (uint8_t)min(UINT8_MAX,
+							      (o_p[i * w + j] * total_luminosity / luminosity + 0.5));
+			}
+		}
+		for (int i = i_second_min; i < h; ++i) {
+			top = max(-halo, -i);
+			bottom = min(halo, h - i - 1);
+			for (int j = 0; j < halo; ++j) {
+				luminosity =  get_partial_luminosity(kernel,
+								     top,
+								     bottom,
+								     max(-halo, -j),
+								     min(halo, w - j - 1));
+				if (!luminosity)
+					return -1;
+				o_p[i * w + j] = (uint8_t)min(UINT8_MAX,
+							      (o_p[i * w + j] * total_luminosity / luminosity + 0.5));
+			}
+			for (int j = j_second_min; j < w; ++j) {
+				luminosity =  get_partial_luminosity(kernel,
+								     top,
+								     bottom,
+								     max(-halo, -j),
+								     min(halo, w - j - 1));
+				if (!luminosity)
+					return -1;
+				o_p[i * w + j] = (uint8_t)min(UINT8_MAX,
+							      (o_p[i * w + j] * total_luminosity / luminosity + 0.5));
+			}
+		}
+
 	}
+						  
+	return 0;
 }
 
 int main(int argc, char** argv)
@@ -117,6 +325,13 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
+	if (remove_vignetting_inplace(&new_pgm, &my_kernel)) {
+		fprintf(stderr, "Problem with vignetting.\n");
+		free_kernel(&my_kernel);
+		free_pgm(&original_pgm);
+		free_pgm(&new_pgm);		
+	}
+	
 	if (write_pgm(argv[3], &new_pgm)) {
 		fprintf(stderr, "Problem with pgm file writing.\n");
 		free_kernel(&my_kernel);
