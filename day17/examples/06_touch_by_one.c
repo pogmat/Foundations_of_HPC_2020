@@ -97,7 +97,7 @@ int main( int argc, char **argv )
 	   N * sizeof(double) ); return 1; }
   
   // just give notice of what will happen and get the number of threads used
-#if defined(_OPENMP)  
+#if defined(_OPENMP)
 #pragma omp parallel
   {
 #pragma omp master

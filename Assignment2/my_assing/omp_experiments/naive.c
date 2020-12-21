@@ -439,13 +439,15 @@ int main(int argc, char** argv)
 		}
 
 		clock_gettime(MY_CLOCK, &t_stop);
-		delta_t = 1e3 * (t_stop.tv_sec - t_start.tv_sec) + 1e-9 * (t_stop.tv_nsec - t_start.tv_nsec);
+		delta_t = 1e3 * (double)(t_stop.tv_sec - t_start.tv_sec) + 1e-6 * (double)(t_stop.tv_nsec - t_start.tv_nsec);
+		//printf("t = %lf\n", delta_t);
 		sum_t += delta_t;
 		sum_t2 += delta_t * delta_t;
 	}
 
 	mean = sum_t / TRIALS;
 	stdev = sqrt(sum_t2 / TRIALS - mean * mean);
+	printf("------------------------------------");
 	printf("t = %lf +- %lf\n", mean, stdev);
 
 	printf("Touch by all (common kernel)\n");
@@ -461,13 +463,15 @@ int main(int argc, char** argv)
 		}
 
 		clock_gettime(MY_CLOCK, &t_stop);
-		delta_t = 1e3 * (t_stop.tv_sec - t_start.tv_sec) + 1e-9 * (t_stop.tv_nsec - t_start.tv_nsec);
+		delta_t = 1e3 * (double)(t_stop.tv_sec - t_start.tv_sec) + 1e-6 * (double)(t_stop.tv_nsec - t_start.tv_nsec);
+		//printf("t = %lf\n", delta_t);
 		sum_t += delta_t;
 		sum_t2 += delta_t * delta_t;
 	}
 
 	mean = sum_t / TRIALS;
 	stdev = sqrt(sum_t2 / TRIALS - mean * mean);
+	printf("------------------------------------");
 	printf("t = %lf +- %lf\n", mean, stdev);	
 
 	printf("Touch by all (copy kernel)\n");
@@ -483,13 +487,15 @@ int main(int argc, char** argv)
 		}
 
 		clock_gettime(MY_CLOCK, &t_stop);
-		delta_t = 1e3 * (t_stop.tv_sec - t_start.tv_sec) + 1e-9 * (t_stop.tv_nsec - t_start.tv_nsec);
+		delta_t = 1e3 * (t_stop.tv_sec - t_start.tv_sec) + 1e-6 * (t_stop.tv_nsec - t_start.tv_nsec);
+		//printf("t = %lf\n", delta_t);
 		sum_t += delta_t;
 		sum_t2 += delta_t * delta_t;
 	}
 
 	mean = sum_t / TRIALS;
 	stdev = sqrt(sum_t2 / TRIALS - mean * mean);
+	printf("------------------------------------");
 	printf("t = %lf +- %lf\n", mean, stdev);
 	
 	return 0;
