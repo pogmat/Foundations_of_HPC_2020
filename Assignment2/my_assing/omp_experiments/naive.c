@@ -135,6 +135,7 @@ int touch_by_one(int w, int h, int k)
 	image_t img = {.w = w, .h = h};
 	long int kernel_dim = (2 * k + 1) * (2 * k + 1);
 
+	#ifndef DRYRUN
 	// Calloc here. This is touch by one.
 	uint16_t* input CLEANUP(cleanup_uint16) = (uint16_t*)calloc(w * h, sizeof(uint16_t));
 	if (!input) {
@@ -166,7 +167,8 @@ int touch_by_one(int w, int h, int k)
 		kernel[i] = (drand48_r(&rnd, &pseudo_random), pseudo_random / kernel_dim);
 	
 	//printf("Data initialized by master.\n");
-
+	#endif
+	
 	int threads;
 	thread_image_t t_img;
 
@@ -176,10 +178,10 @@ int touch_by_one(int w, int h, int k)
 		#pragma omp master
 		{
 			threads = omp_get_num_threads();
-			//printf("threads number: %d\n", threads);
-			//printf("allocated memory: %f Mb.\n", ((float)(w*h*sizeof(int16_t))) / ((float)(2 << 19)));
+			printf("threads number: %d\n", threads);
+			printf("allocated memory: %f Mb.\n", ((float)(w*h*sizeof(int16_t))) / ((float)(2 << 19)));
 			grid_dimension(&img, threads, &t_img);
-			//printf("w_threads: %d, h_threads: %d.\n\n", t_img.t_w, t_img.t_h);	
+			printf("w_threads: %d, h_threads: %d.\n\n", t_img.t_w, t_img.t_h);	
 		}
 		
 		#pragma omp barrier
@@ -189,20 +191,21 @@ int touch_by_one(int w, int h, int k)
 		int i = myid / t_img.t_w;
 		int j = myid % t_img.t_w;
 		framed_t frame;
-		//get_frame(&t_img, k, i, j, &frame);
+		get_frame(&t_img, k, i, j, &frame);
 		get_frame(&t_img, k, i, j, &frame);
 		
-		//#pragma omp critical(show)
-		//{
-			//printf("[THREAD %d]  coordinates       : (%d, %d)\n"
-			//       "            reading dimensions: (%d, %d)\n"
-			//       "            reading start     : (%d, %d)\n"
-			//       "            writing dimensions: (%d, %d)\n"
-			//       "            writing start     : (%d, %d)\n",
-			//       myid, j, i, frame.rw, frame.rh, frame.jr_start, frame.ir_start,
-			//       frame.ww, frame.wh, frame.jw_start, frame.iw_start);
-			//}
-		
+		#pragma omp critical(show)
+		{
+			printf("[THREAD %d]  coordinates       : (%d, %d)\n"
+			       "            reading dimensions: (%d, %d)\n"
+			       "            reading start     : (%d, %d)\n"
+			       "            writing dimensions: (%d, %d)\n"
+			       "            writing start     : (%d, %d)\n",
+			       myid, j, i, frame.rw, frame.rh, frame.jr_start, frame.ir_start,
+			       frame.ww, frame.wh, frame.jw_start, frame.iw_start);
+			}
+
+		#ifndef DRYRUN
 		double new_value;
 
 		for (int i = frame.iw_start; i < frame.iw_start + frame.wh; ++i)
@@ -214,13 +217,16 @@ int touch_by_one(int w, int h, int k)
 							* kernel[b - j + k + (2 * k + 1) * (a - i + k)];
 				output[j + frame.ww * i] = (uint16_t)min(UINT16_MAX, (int)(new_value + 0.5));
 			}
+		#endif
 	}
 	
 	// Prevent non-computation of output.
+	#ifndef DRYRUN
 	double index;
 	drand48_r(&rnd, &index);
 	volatile uint16_t sink = output[w * h * (int)index];
 	(void) sink;
+	#endif
 	
 	return 0;
 }
@@ -426,18 +432,21 @@ int main(int argc, char** argv)
 	struct timespec t_start, t_stop;
 	double delta_t, sum_t, sum_t2, mean, stdev;
 
+	#ifndef DRYRUN
 	printf("Touch by one\n");
 	sum_t = 0;
 	sum_t2 = 0;
 	for (int i = 0; i < TRIALS; ++i) {
 
 		clock_gettime(MY_CLOCK, &t_start);
+		#endif
 		
 		if (touch_by_one(w, h, k)) {
 			fprintf(stderr, "Error in touch_by_one\n");
 			return 1;
 		}
 
+		#ifndef DRYRUN
 		clock_gettime(MY_CLOCK, &t_stop);
 		delta_t = 1e3 * (double)(t_stop.tv_sec - t_start.tv_sec) + 1e-6 * (double)(t_stop.tv_nsec - t_start.tv_nsec);
 		//printf("t = %lf\n", delta_t);
@@ -497,6 +506,7 @@ int main(int argc, char** argv)
 	stdev = sqrt(sum_t2 / TRIALS - mean * mean);
 	printf("------------------------------------");
 	printf("t = %lf +- %lf\n", mean, stdev);
+	#endif
 	
 	return 0;
 }

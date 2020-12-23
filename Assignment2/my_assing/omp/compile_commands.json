@@ -1,0 +1,82 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I",
+      "include",
+      "-fopenmp",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-g",
+      "-O0",
+      "-o",
+      "build/kernel.o",
+      "src/kernel.c"
+    ],
+    "directory": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp",
+    "file": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/src/kernel.c",
+    "output": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/build/kernel.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I",
+      "include",
+      "-fopenmp",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-g",
+      "-O0",
+      "-o",
+      "build/grid.o",
+      "src/grid.c"
+    ],
+    "directory": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp",
+    "file": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/src/grid.c",
+    "output": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/build/grid.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I",
+      "include",
+      "-fopenmp",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-g",
+      "-O0",
+      "-o",
+      "build/omp_blur.o",
+      "src/omp_blur.c"
+    ],
+    "directory": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp",
+    "file": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/src/omp_blur.c",
+    "output": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/build/omp_blur.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I",
+      "include",
+      "-fopenmp",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-g",
+      "-O0",
+      "-o",
+      "build/pgm_bin.o",
+      "src/pgm_bin.c"
+    ],
+    "directory": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp",
+    "file": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/src/pgm_bin.c",
+    "output": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/build/pgm_bin.o"
+  }
+]
