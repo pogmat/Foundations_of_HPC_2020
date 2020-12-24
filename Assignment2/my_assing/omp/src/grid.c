@@ -1,5 +1,5 @@
-#include <grid.h>
 #include <math.h>
+#include "grid.h"
 
 void grid_dimension(const int w, const int h,
 		    const int threads,

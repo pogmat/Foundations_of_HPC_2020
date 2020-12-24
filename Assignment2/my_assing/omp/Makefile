@@ -28,7 +28,7 @@ else
 endif
 
 CC = gcc
-CFLAGS = -fopenmp -Wall -Wextra -Wpedantic
+CFLAGS = -fopenmp -flto -fivopts -Wall -Wextra -Wpedantic
 CPPFLAGS = -I $(IDIR)
 LDFLAGS = $(LIBS) -fopenmp
 ifeq (${DEBUG}, y)  
