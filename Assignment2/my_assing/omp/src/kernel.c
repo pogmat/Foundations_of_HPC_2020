@@ -1,5 +1,5 @@
 #include <malloc.h>
-#include <kernel.h>
+#include "kernel.h"
 
 kernel_t*  init_kernel_from_vector(const real* const init_vector,
 			    const unsigned int s)
