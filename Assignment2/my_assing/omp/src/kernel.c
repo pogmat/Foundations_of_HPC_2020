@@ -61,7 +61,7 @@ kernel_t* init_kernel_from_file(const char* const filename)
 	unsigned int kernel_size = (2*s + 1) * (2*s + 1);
 	new_kernel->kernel = (real*)calloc(kernel_size, sizeof(real));
 	if (!new_kernel) {
-		fprintf(stderr, "Bat allocation.\n");
+		fprintf(stderr, "Bad allocation.\n");
 		fclose(fp);
 		return NULL;
 	}
@@ -100,13 +100,13 @@ kernel_t* copy_kernel(const kernel_t* const k)
 		return NULL;
 	}
 
-	new_kernel->kernel = (real*)malloc(k->s * sizeof(real));
+	new_kernel->kernel = (real*)malloc((2 * k->s + 1) * (2 * k->s + 1)  * sizeof(real));
 	if (!new_kernel->kernel) {
 		fprintf(stderr, "Bad kernel allocaton.\n");
 		return NULL;
 	}
 
-	for (unsigned int i = 0; i < k->s; ++i)
+	for (unsigned int i = 0; i < (1 + 2 * k->s) * (1 + 2 * k->s); ++i)
 		new_kernel->kernel[i] = k->kernel[i];
 
 	new_kernel->s = k->s;
