@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <math.h>
+#include <omp.h>
 #include "pgm_bin.h"
 #include "kernel.h"
 #include "grid.h"
-#include <omp.h>
 
 #define _GNU_SOURCE
 
@@ -12,6 +14,12 @@
 #error This program require GNU C extensions
 #endif
 #define CLEANUP(x) __attribute__((__cleanup__(x)))
+
+#define TIMESTAMP_START t_start
+#define TIMESTAMP_STOP t_stop
+#define T_START clock_gettime(CLOCK_THREAD_CPUTIME_ID, &(TIMESTAMP_START))
+#define T_STOP clock_gettime(CLOCK_THREAD_CPUTIME_ID, &(TIMESTAMP_STOP))
+#define DELTA_mSEC 1e3 * (double)(TIMESTAMP_STOP.tv_sec - TIMESTAMP_START.tv_sec) + 1e-6 * (double)(TIMESTAMP_STOP.tv_nsec - TIMESTAMP_START.tv_nsec) 
 
 #ifndef _OPENMP
 #warning You are compiling without openmp support!
@@ -29,10 +37,17 @@ int blur_pgm(const pgm_file_t* const input,
 	const int halo = (int)kernel->s;
 	int loaded_kernel = 0;
 	int proceed = 0;
-	
        	int threads, w_th, h_th;
-	#pragma omp parallel firstprivate(w, h, halo)
+	double init_time = 0,
+		init_time2 = 0,
+		load_time = 0,
+		comp_time = 0,
+		comp_time2 = 0,
+		flsh_time = 0;
+	
+	#pragma omp parallel firstprivate(w, h, halo) reduction(+:init_time, init_time2, comp_time, comp_time2)
 	{
+		struct timespec TIMESTAMP_START, TIMESTAMP_STOP;
 		#pragma omp master
 		{
 			// Compute the distribution of w and h threads
@@ -41,6 +56,9 @@ int blur_pgm(const pgm_file_t* const input,
 		}
 		#pragma omp barrier
 
+		// ##### BEGIN INIT PHASE #####
+		T_START;
+		
 		int id = omp_get_thread_num();
 		int j = id % w_th;
 		int i = id / w_th;
@@ -88,12 +106,21 @@ int blur_pgm(const pgm_file_t* const input,
 			#pragma omp atomic update
 			++loaded_kernel;
 		}
-	
+
+		// ##### END INIT PHASE #####
+		T_STOP;
+		init_time = DELTA_mSEC;
+		init_time2 = init_time * init_time;
+		
 		// Data are written from file to input buffer
 		// Memory is allocated for output buffer
 		#pragma omp barrier
 		#pragma omp master
 	        {
+
+			// ##### BEGIN LOAD PHASE #####
+			T_START;
+			
 			#ifdef DEBUG_MODE
 			printf("Private kernels: %d/%d loaded.\n", loaded_kernel, threads);
 			#endif
@@ -115,9 +142,16 @@ int blur_pgm(const pgm_file_t* const input,
 			#ifdef DEBUG_MODE
 			printf("proceed = %d.\n", proceed);
 			#endif
+
+			// ##### END LOAD PHASE #####
+			T_STOP;
+			load_time = DELTA_mSEC;
 		}		
 		#pragma omp barrier
 
+		// ##### BEGIN COMP PHASE #####
+		T_START;
+		
 		if (proceed) {
 			register int s = halo;
 			register real new_value;
@@ -174,9 +208,19 @@ int blur_pgm(const pgm_file_t* const input,
 						n_p[j + w * i] = (dbyte)min(UINT8_MAX, (uint64_t)(new_value + 0.5));
 					}								
 			}
+
+			// ##### END COMP PHASE #####
+			T_STOP;
+			comp_time = DELTA_mSEC;
+			comp_time2 = comp_time * comp_time;			
+			
 			#pragma omp barrier
 			#pragma omp master
 			{
+
+				// ##### BEGIN FLSH PHASE #####
+				T_START;
+				
 				#ifdef DEBUG_MODE
 				printf("Blurred.\n");
 				#endif
@@ -189,11 +233,23 @@ int blur_pgm(const pgm_file_t* const input,
 				#ifdef DEBUG_MODE
 				printf("Image written.\n");
 				#endif
+
+				// ##### END FLSH PHASE #####
+				T_STOP;
+				flsh_time = DELTA_mSEC;
 			}
 		}
 	}
-	
-	
+
+	double init_mean = init_time / threads;
+	double init_stddev = sqrt(init_time2 / threads - init_mean * init_mean);
+	double comp_mean = comp_time / threads;
+	double comp_stddev = sqrt(comp_time2 / threads - comp_mean * comp_mean);
+
+	printf("init_time: %11.6lf +- %11.6lf ms\n", init_mean, init_stddev);
+	printf("load_time: %11.6lf                ms\n", load_time);
+	printf("comp_time: %11.6lf +- %11.6lf ms\n", comp_mean, comp_stddev);
+	printf("load_time: %11.6lf                ms\n", flsh_time);
 
 	if (!proceed)
 		return 1;
