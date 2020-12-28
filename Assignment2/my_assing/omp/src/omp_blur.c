@@ -25,8 +25,12 @@
 #warning You are compiling without openmp support!
 #endif
 
-void cleanup_pgm_file(pgm_file_t** f) {close_pgm(*f);}
-void cleanup_kernel_t(kernel_t** k) {free_kernel(*k);}
+void cleanup_pgm_file(pgm_file_t** f) {close_pgm(f);}
+void cleanup_kernel_t(kernel_t** k) {free_kernel(k);}
+
+#ifdef PRIVATE_SUBIMAGE
+void cleanup_bytes(byte** b) {free(*b); *b = NULL;}
+#endif
 
 int blur_pgm(const pgm_file_t* const input,
 	     const kernel_t* const kernel,
@@ -35,7 +39,13 @@ int blur_pgm(const pgm_file_t* const input,
 	const int w = (int)input->image.width;
 	const int h = (int)input->image.height;
 	const int halo = (int)kernel->s;
+
+	#ifdef DEBUG_MODE
+	printf("Image %d x %d, with halo of %d\n", w, h, halo);
+	#endif
+	
 	int loaded_kernel = 0;
+	int loaded_images = 0;
 	int proceed = 0;
        	int threads, w_th, h_th;
 	double init_time = 0,
@@ -106,7 +116,7 @@ int blur_pgm(const pgm_file_t* const input,
 		// to minimize memory contention
 		kernel_t* CLEANUP(cleanup_kernel_t) private_k = copy_kernel(kernel);
 		if (!private_k) {
-			fprintf(stderr, "[THREAD %d] Bad allocation on thread.\n", id);
+			fprintf(stderr, "[THREAD %d] Bad allocation on thread. (private kernel)\n", id);
 		} else {
 			#pragma omp atomic update
 			++loaded_kernel;
@@ -118,7 +128,6 @@ int blur_pgm(const pgm_file_t* const input,
 		// ##### END INIT PHASE #####
 		T_STOP;
 		init_time = DELTA_mSEC;
-		init_time2 = init_time * init_time;
 		
 		// Data are written from file to input buffer
 		// Memory is allocated for output buffer
@@ -137,6 +146,12 @@ int blur_pgm(const pgm_file_t* const input,
 			loaded_kernel = threads;
 			#warning SHARED_KERNEL enabled
 			#endif
+
+			#ifndef PRIVATE_SUBIMAGE
+			loaded_images = threads;
+			#else
+			#warning PRIVATE_SUBIMAGE enabled
+			#endif
 			
 			size_t bytes_data = (1 + (input->image.maximum_value > UINT8_MAX))
 				* input->image.width * input->image.height;
@@ -144,7 +159,7 @@ int blur_pgm(const pgm_file_t* const input,
 				fprintf(stderr, "Error in reading input file.\n");
 			} else if (!(output->image.data = (byte*)malloc(bytes_data))) {
 				fprintf(stderr, "Error in allocating output file buffer.\n");
-			} else if (loaded_kernel == threads) {
+			} else if (loaded_kernel == threads || loaded_images == threads) {
 				strncpy(output->image.magic, input->image.magic, 3);
 				output->image.width = input->image.width;
 				output->image.height = input->image.height;
@@ -162,6 +177,35 @@ int blur_pgm(const pgm_file_t* const input,
 		}		
 		#pragma omp barrier
 
+		#ifdef PRIVATE_SUBIMAGE
+		#warning PRIVATE_SUBIMAGE enabled
+		// ##### BEGIN INIT2 PHASE #####
+		T_START;
+
+		byte* CLEANUP(cleanup_bytes) private_i = (byte*)malloc(
+			frame.read.w * frame.read.h
+			* (1 + (input->image.maximum_value > UINT8_MAX))
+			* sizeof(byte));
+
+		if (input->image.maximum_value > UINT8_MAX) {
+			for (int j = 0; j < frame.read.w; ++j)
+				for (int i = 0; i < frame.read.h; ++i)
+					((dbyte*)private_i)[j + frame.read.w * i] =
+						((dbyte*)(input->image.data))[j + frame.read.j + w * (i + frame.read.i)];
+		} else {
+			for (int j = 0; j < frame.read.w; ++j)
+				for (int i = 0; i < frame.read.h; ++i)
+					private_i[j + frame.read.w * i] =
+						input->image.data[j + frame.read.j + w * (i + frame.read.i)];
+		}
+		
+		// ##### END INIT2 PHASE #####
+		T_STOP;
+		init_time += DELTA_mSEC;
+		#endif
+		init_time2 = init_time * init_time;
+
+		
 		// ##### BEGIN COMP PHASE #####
 		T_START;
 		
@@ -185,46 +229,89 @@ int blur_pgm(const pgm_file_t* const input,
 				printf("16-bit image.\n");
 				#endif
 				dbyte* n_p = (dbyte*)output->image.data;
-				dbyte* o_p = (dbyte*)input->image.data;
 
-				for (int i = frame.writ.i; i < frame.writ.i + frame.writ.h; ++i)
-					for (int j = frame.writ.j; j < frame.writ.j + frame.writ.w; ++j) {
-						new_value = 0.0;
-						for (int a = max(0, i - s); a < min(h, i + s + 1); ++a) {
-							for (int b = max(0, j - s); b < min(w, j + s +1) - 1; b += 2) {
-								new_value +=
-									(o_p[b + w * a] * k_p[b - j + s + (2 * s +1) * (a - i + s)] +
-									 o_p[b + 1 + w * a] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)]);
-							}
-							if ((min(w, j + s +1) - max(0, j - s)) % 2)
-								new_value +=
-									o_p[min(w, j + s +1) - 1 + w * a] * k_p[min(w, j + s +1) - 1 - j + s + (2 * s +1) * (a - i + s)];
-						}
-						n_p[j + w * i] = (dbyte)min(UINT16_MAX, (uint64_t)(new_value + 0.5));
-					}
-			} else {
-				#ifdef DEBUG_MODE
-				#pragma omp master
-				printf("8-bit image.\n");
+				#ifndef PRIVATE_SUBIMAGE
+				dbyte* o_p = (dbyte*)input->image.data;
+				#else
+				#warning PRIVATE_SUBIMAGE enabled
+				dbyte* o_p = (dbyte*)private_i;				
 				#endif
-				byte* n_p = output->image.data;
-				byte* o_p = input->image.data;
 				
 				for (int i = frame.writ.i; i < frame.writ.i + frame.writ.h; ++i)
 					for (int j = frame.writ.j; j < frame.writ.j + frame.writ.w; ++j) {
 						new_value = 0.0;
 						for (int a = max(0, i - s); a < min(h, i + s + 1); ++a) {
 							for (int b = max(0, j - s); b < min(w, j + s +1) - 1; b += 2) {
+								#ifndef PRIVATE_SUBIMAGE
 								new_value +=
 									(o_p[b + w * a] * k_p[b - j + s + (2 * s +1) * (a - i + s)] +
-									 o_p[b + 1 + w * a] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)]);						
+									 o_p[b + 1 + w * a] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)]);
+								#else
+								#warning PRIVATE_SUBIMAGE enabled
+								new_value +=
+									(o_p[b - frame.read.j + frame.read.w * (a - frame.read.i)] * k_p[b - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 1 + frame.read.w * (a - frame.read.i)] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)]);
+								#endif
 							}
-							if ((min(w, j + s +1) - max(0, j - s)) % 2)
+							if ((min(w, j + s +1) - max(0, j - s)) % 2) {
+								#ifndef PRIVATE_SUBIMAGE
 								new_value +=
 									o_p[min(w, j + s +1) - 1 + w * a] * k_p[min(w, j + s +1) - 1 - j + s + (2 * s +1) * (a - i + s)];
+								#else
+								#warning PRIVATE_SUBIMAGE enabled
+								new_value +=
+									o_p[min(w, j + s +1) - 1 - frame.read.j+ frame.read.w * (a - frame.read.i)]
+									* k_p[min(w, j + s +1) - 1 - j + s + (2 * s +1) * (a - i + s)];							       
+								#endif
+							}
 						}
-						n_p[j + w * i] = (dbyte)min(UINT8_MAX, (uint64_t)(new_value + 0.5));
-					}								
+						n_p[j + w * i] = (dbyte)min(UINT16_MAX, (uint64_t)(new_value + 0.5));
+					}
+
+			} else {
+				#ifdef DEBUG_MODE
+				#pragma omp master
+				printf("8-bit image.\n");
+				#endif
+				byte* n_p = output->image.data;
+
+				#ifndef PRIVATE_SUBIMAGE
+				byte* o_p = input->image.data;
+				#else
+				#warning PRIVATE SUBIMAGE enabled
+				byte* o_p = private_i;
+				#endif
+
+				for (int i = frame.writ.i; i < frame.writ.i + frame.writ.h; ++i)
+					for (int j = frame.writ.j; j < frame.writ.j + frame.writ.w; ++j) {
+						new_value = 0.0;
+						for (int a = max(0, i - s); a < min(h, i + s + 1); ++a) {
+							for (int b = max(0, j - s); b < min(w, j + s +1) - 1; b += 2) {
+								#ifndef PRIVATE_SUBIMAGE
+								new_value +=
+									(o_p[b + w * a] * k_p[b - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b + 1 + w * a] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)]);
+								#else
+								#warning PRIVATE SUBIMAGE enabled
+								new_value +=
+									(o_p[b - frame.read.j + frame.read.w * (a - frame.read.i)] * k_p[b - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 1 + frame.read.w * (a - frame.read.i)] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)]);
+								#endif
+							}
+							if ((min(w, j + s +1) - max(0, j - s)) % 2) {
+								#ifndef PRIVATE_SUBIMAGE
+								new_value +=
+									o_p[min(w, j + s +1) - 1 + w * a] * k_p[min(w, j + s +1) - 1 - j + s + (2 * s +1) * (a - i + s)];
+								#else
+								#warning PRIVATE SUBIMAGE enabled
+								new_value +=
+									o_p[min(w, j + s +1) - 1 - frame.read.j+ frame.read.w * (a - frame.read.i)]
+									* k_p[min(w, j + s +1) - 1 - j + s + (2 * s +1) * (a - i + s)];							       
+								#endif								
+							}
+						}
+						n_p[j + w * i] = (byte)min(UINT8_MAX, (uint64_t)(new_value + 0.5));
+					}
 			}
 
 			// ##### END COMP PHASE #####

@@ -4,7 +4,7 @@
 
 #define CLEANUP(x) __attribute__((__cleanup__(x)))
 
-void cleanup_kernel_t(kernel_t** kp){free_kernel(*kp);}
+void cleanup_kernel_t(kernel_t** kp){free_kernel(kp);}
 
 int main(int argc, char** argv)
 {

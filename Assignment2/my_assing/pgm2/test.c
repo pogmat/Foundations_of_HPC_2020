@@ -8,7 +8,7 @@
 
 #define CLEANUP(x) __attribute__((__cleanup__(x)))
 
-void cleanup_pgm(pgm_file_t** fpp) {close_pgm(*fpp);}
+void cleanup_pgm(pgm_file_t** fpp) {close_pgm(fpp);}
 
 int main(int argc, char** argv)
 {

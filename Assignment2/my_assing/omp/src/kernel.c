@@ -148,11 +148,13 @@ void normalize_luminosity(kernel_t* const k, const real norm)
 		k->kernel[i] *= ratio;
 }
 
-void free_kernel(kernel_t* const k)
+void free_kernel(kernel_t** const k)
 {
-	if (!k)
+	if (!(*k))
 		return;
 	
-	free(k->kernel);
-	free(k);
+	free((*k)->kernel);
+	free(*k);
+
+	*k = NULL;
 }

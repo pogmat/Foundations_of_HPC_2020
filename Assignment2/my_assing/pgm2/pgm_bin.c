@@ -182,16 +182,18 @@ int write_pgm(const pgm_file_t* const pgm)
 	return 0;	
 }
 
-void close_pgm(pgm_file_t* const pgm)
+void close_pgm(pgm_file_t** const pgm)
 {
-	if (!pgm)
+	if (!(*pgm))
 		return;
 
-	if (pgm->image.data)
-		free(pgm->image.data);
+	if ((*pgm)->image.data)
+		free((*pgm)->image.data);
 
-	if (pgm->file)
-		fclose(pgm->file);
+	if ((*pgm)->file)
+		fclose((*pgm)->file);
 
-	free(pgm);
+	free(*pgm);
+
+	*pgm = NULL;
 }

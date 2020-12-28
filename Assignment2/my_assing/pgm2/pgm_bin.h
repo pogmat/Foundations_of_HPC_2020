@@ -31,7 +31,7 @@ typedef struct {
 pgm_file_t* open_pgm(const char* const, const char);
 int read_pgm(const pgm_file_t* const);
 int write_pgm(const pgm_file_t* const);
-void close_pgm(pgm_file_t* const);
+void close_pgm(pgm_file_t** const);
 
 static inline void touch_zero(const pgm_image_t* const img, size_t i) {img->data[i] = 0;}
 
