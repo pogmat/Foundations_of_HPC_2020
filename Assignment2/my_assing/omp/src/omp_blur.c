@@ -78,12 +78,16 @@ int blur_pgm(const pgm_file_t* const input,
 		       frame.read.w, frame.read.h, frame.read.j, frame.read.i,
 		       frame.writ.w, frame.writ.h, frame.writ.j, frame.writ.i);
 		#endif
-		
+
+		#ifndef NO_TOUCH_FIRST
 		// Touch first paradigm
 		for (int j = frame.writ.j; j < frame.writ.j + frame.writ.w; ++j)
 			for (int i = frame.writ.i; i < frame.writ.i + frame.writ.h; ++i)
 				touch_zero(&input->image, j + i * w);
-
+		#else
+		#warning NO_TOUCH_FIRST enabled
+		#endif
+		
 		#ifdef DEBUG_MODE
 		#pragma omp master
 		{
@@ -96,7 +100,8 @@ int blur_pgm(const pgm_file_t* const input,
 			}
 		}
 		#endif
-			    
+
+		#ifndef SHARED_KERNEL
 		// Every thread make a copy of the kernel
 		// to minimize memory contention
 		kernel_t* CLEANUP(cleanup_kernel_t) private_k = copy_kernel(kernel);
@@ -106,6 +111,9 @@ int blur_pgm(const pgm_file_t* const input,
 			#pragma omp atomic update
 			++loaded_kernel;
 		}
+		#else
+		#warning SHARED_KERNEL enabled
+		#endif
 
 		// ##### END INIT PHASE #####
 		T_STOP;
@@ -123,6 +131,11 @@ int blur_pgm(const pgm_file_t* const input,
 			
 			#ifdef DEBUG_MODE
 			printf("Private kernels: %d/%d loaded.\n", loaded_kernel, threads);
+			#endif
+
+			#ifdef SHARED_KERNEL
+			loaded_kernel = threads;
+			#warning SHARED_KERNEL enabled
 			#endif
 			
 			size_t bytes_data = (1 + (input->image.maximum_value > UINT8_MAX))
@@ -155,7 +168,12 @@ int blur_pgm(const pgm_file_t* const input,
 		if (proceed) {
 			register int s = halo;
 			register real new_value;
+			#ifndef SHARED_KERNEL
 			real* k_p = private_k->kernel;
+			#else
+			real* k_p = kernel->kernel;
+			#warning SHARED KERNEL enabled
+			#endif
 
 			#ifdef DEBUG_MODE
 			printf("Blurring form kernel %d.\n", id);
@@ -246,10 +264,10 @@ int blur_pgm(const pgm_file_t* const input,
 	double comp_mean = comp_time / threads;
 	double comp_stddev = sqrt(comp_time2 / threads - comp_mean * comp_mean);
 
-	printf("init_time: %11.6lf +- %11.6lf ms\n", init_mean, init_stddev);
-	printf("load_time: %11.6lf                ms\n", load_time);
-	printf("comp_time: %11.6lf +- %11.6lf ms\n", comp_mean, comp_stddev);
-	printf("load_time: %11.6lf                ms\n", flsh_time);
+	printf("init_time: %14.6lf +- %11.6lf ms\n", init_mean, init_stddev);
+	printf("load_time: %14.6lf                ms\n", load_time);
+	printf("comp_time: %14.6lf +- %11.6lf ms\n", comp_mean, comp_stddev);
+	printf("load_time: %14.6lf                ms\n", flsh_time);
 
 	if (!proceed)
 		return 1;
@@ -260,6 +278,11 @@ int blur_pgm(const pgm_file_t* const input,
 
 int main(int argc, char** argv)
 {
+	double tot_time = 0;
+	struct timespec TIMESTAMP_START, TIMESTAMP_STOP;
+
+	T_START;
+		
 	if (argc != 4) {
 		fprintf(stderr, "USAGE:\n%s <input> <kernel> <output>\n", argv[0]);
 		return EXIT_FAILURE;
@@ -288,6 +311,10 @@ int main(int argc, char** argv)
 		fprintf(stderr, "Error in blurring image.\n");
 		return EXIT_FAILURE;
 	}
+
+	T_STOP;
+	tot_time = DELTA_mSEC;
+	printf("totl_time: %14.6lf                ms\n", tot_time);
 	
 	return EXIT_SUCCESS;
 }

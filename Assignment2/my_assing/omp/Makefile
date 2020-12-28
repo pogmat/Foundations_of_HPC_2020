@@ -14,6 +14,7 @@ SRCEXT = c
 OBJEXT = o
 TRGEXT = x
 
+COMPILEFLAGS =
 RUNOPTIONS =
 
 DEPS = $(patsubst %, $(IDIR)/%.$(HEADEXT), $(HEADS))
@@ -29,9 +30,11 @@ endif
 
 CC = gcc
 CFLAGS = -fopenmp -flto -fuse-linker-plugin -fivopts -Wall -Wextra -Wpedantic
-CPPFLAGS = -I $(IDIR)
+CPPFLAGS = $(COMPILEFLAGS)
+CPPFLAGS += -I $(IDIR)
 LDFLAGS = $(LIBS) -fopenmp
 ifeq (${DEBUG}, y)  
+	CPPFLAGS += -DDEBUG_MODE
 	CFLAGS += -g -O0 -DDEBUG_MODE
 else
 	CFLAGS += -O3 -march=native
