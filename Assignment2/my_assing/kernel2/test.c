@@ -6,8 +6,21 @@
 
 void cleanup_kernel_t(kernel_t** kp){free_kernel(kp);}
 
-int main(int argc, char** argv)
+void print_kernel(const kernel_t* k)
 {
+	const int s = k->s;
+
+	for (int i = -s; i <= (int)s; ++i) {
+		for (int j = -s; j <= (int)s; ++j)
+			printf("%7.6lf ", k->kernel[j + s + (2*s+1) * (i + s)]);
+		printf("\n");
+	}
+			 
+}
+
+int main(/*int argc, char** argv*/)
+{
+	/*
 	if (argc != 6) {
 		fprintf(stderr, "Give me a kernel file and four integer.\n");
 		return 1;
@@ -53,6 +66,17 @@ int main(int argc, char** argv)
 	printf("s: %d\n", kernel2->s);
 	for (unsigned int i = 0; i < kernel1->s; ++i)
 		printf("kernel[%d] = %f\n", i, kernel2->kernel[i]);
+	*/
+
+	kernel_t* CLEANUP(cleanup_kernel_t) m = mean_kernel(5);;
+	kernel_t* CLEANUP(cleanup_kernel_t) w = weight_kernel(5, 0.52);
+	kernel_t* CLEANUP(cleanup_kernel_t) g = gaussian_kernel(5);	
+
+	print_kernel(m);
+	printf("\n");
+	print_kernel(w);
+	printf("\n");
+	print_kernel(g);
 	
 	return 0;
 }

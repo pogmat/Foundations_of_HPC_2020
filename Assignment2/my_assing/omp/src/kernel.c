@@ -1,4 +1,5 @@
 #include <malloc.h>
+#include <math.h>
 #include "kernel.h"
 
 kernel_t*  init_kernel_from_vector(const real* const init_vector,
@@ -61,7 +62,7 @@ kernel_t* init_kernel_from_file(const char* const filename)
 	unsigned int kernel_size = (2*s + 1) * (2*s + 1);
 	new_kernel->kernel = (real*)calloc(kernel_size, sizeof(real));
 	if (!new_kernel) {
-		fprintf(stderr, "Bad allocation.\n");
+		fprintf(stderr, "Bat allocation.\n");
 		fclose(fp);
 		return NULL;
 	}
@@ -92,6 +93,84 @@ kernel_t* init_kernel_from_file(const char* const filename)
 	return new_kernel;
 }
 
+kernel_t* mean_kernel(const unsigned int s)
+{
+	kernel_t* new_kernel =(kernel_t*)malloc(sizeof(kernel_t));
+	if (!new_kernel) {
+		fprintf(stderr, "Bad allocation.\n");
+		return NULL;
+	}
+
+	new_kernel->s = s;
+	
+	const unsigned int kernel_size = (2*s + 1) * (2*s + 1);
+	new_kernel->kernel = (real*)calloc(kernel_size, sizeof(real));
+	if (!new_kernel->kernel) {
+		fprintf(stderr, "Bad kernel allocaton.\n");
+		return NULL;
+	}
+	
+	const double val = 1 / ((double)kernel_size);
+	for (unsigned int i = 0; i < kernel_size; ++i)
+		new_kernel->kernel[i] = val;
+	
+	return new_kernel;
+}
+
+kernel_t* weight_kernel(const unsigned int s, const double f)
+{
+	kernel_t* new_kernel =(kernel_t*)malloc(sizeof(kernel_t));
+	if (!new_kernel) {
+		fprintf(stderr, "Bad allocation.\n");
+		return NULL;
+	}
+
+	new_kernel->s = s;
+	
+	const unsigned int kernel_size = (2*s + 1) * (2*s + 1);
+	new_kernel->kernel = (real*)calloc(kernel_size, sizeof(real));
+	if (!new_kernel->kernel) {
+		fprintf(stderr, "Bad kernel allocaton.\n");
+		return NULL;
+	}	
+	
+	const double w = ((double)(1 - f)) / ((double)(kernel_size - 1));
+	for (unsigned int i = 0; i < kernel_size / 2; ++i)
+		new_kernel->kernel[i] = w;
+	new_kernel->kernel[kernel_size / 2] = f;
+	for (unsigned int i = kernel_size / 2 + 1; i < kernel_size; ++i)
+		new_kernel->kernel[i] = w;
+		
+	return new_kernel;
+}
+
+kernel_t* gaussian_kernel(const unsigned int s)
+{
+	kernel_t* new_kernel =(kernel_t*)malloc(sizeof(kernel_t));
+	if (!new_kernel) {
+		fprintf(stderr, "Bad allocation.\n");
+		return NULL;
+	}
+
+	new_kernel->s = s;
+	
+	const unsigned int kernel_size = (2*s + 1) * (2*s + 1);
+	new_kernel->kernel = (real*)calloc(kernel_size, sizeof(real));
+	if (!new_kernel->kernel) {
+		fprintf(stderr, "Bad kernel allocaton.\n");
+		return NULL;
+	}
+	
+	const double invs2 = 1 / ((double)(s * s));
+	for (int i = -s; i <= (int)s; ++i)
+		for (int j = -s; j <= (int)s; ++j)
+			new_kernel->kernel[j + s + (2*s+1) * (i + s)] = exp(-((double)(i*i + j*j)) * invs2);
+
+	normalize_luminosity(new_kernel, 1.0);
+	
+	return new_kernel;
+}
+
 kernel_t* copy_kernel(const kernel_t* const k)
 {
 	kernel_t* new_kernel =(kernel_t*)malloc(sizeof(kernel_t));
@@ -100,13 +179,13 @@ kernel_t* copy_kernel(const kernel_t* const k)
 		return NULL;
 	}
 
-	new_kernel->kernel = (real*)malloc((2 * k->s + 1) * (2 * k->s + 1)  * sizeof(real));
+	new_kernel->kernel = (real*)malloc(k->s * sizeof(real));
 	if (!new_kernel->kernel) {
 		fprintf(stderr, "Bad kernel allocaton.\n");
 		return NULL;
 	}
 
-	for (unsigned int i = 0; i < (1 + 2 * k->s) * (1 + 2 * k->s); ++i)
+	for (unsigned int i = 0; i < k->s; ++i)
 		new_kernel->kernel[i] = k->kernel[i];
 
 	new_kernel->s = k->s;
@@ -155,6 +234,5 @@ void free_kernel(kernel_t** const k)
 	
 	free((*k)->kernel);
 	free(*k);
-
 	*k = NULL;
 }

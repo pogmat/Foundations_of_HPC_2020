@@ -40,6 +40,10 @@ int blur_pgm(const pgm_file_t* const input,
 	const int h = (int)input->image.height;
 	const int halo = (int)kernel->s;
 
+	#ifdef DEBUG_MODE
+	printf("Image %d x %d, with halo of %d\n", w, h, halo);
+	#endif
+	
 	int loaded_kernel = 0;
 	int loaded_images = 0;
 	int proceed = 0;
@@ -58,11 +62,6 @@ int blur_pgm(const pgm_file_t* const input,
 		{
 			// Compute the distribution of w and h threads
 			threads = omp_get_num_threads();
-			printf("### width  : %8d\n"
-			       "### height : %8d\n"
-			       "### halo   : %8d\n"
-			       "### threads: %8d\n",
-			       w, h, halo, threads);
 			grid_dimension(w, h, threads, &w_th, &h_th);
 		}
 		#pragma omp barrier
@@ -267,7 +266,6 @@ int blur_pgm(const pgm_file_t* const input,
 							}
 						}
 						n_p[j + w * i] = (dbyte)min(UINT16_MAX, (uint64_t)(new_value + 0.5));
-						//printf("### %d\n", n_p[j + w * i]);
 					}
 
 			} else {
@@ -356,7 +354,7 @@ int blur_pgm(const pgm_file_t* const input,
 	printf("init_time: %14.6lf +- %11.6lf ms\n", init_mean, init_stddev);
 	printf("load_time: %14.6lf                ms\n", load_time);
 	printf("comp_time: %14.6lf +- %11.6lf ms\n", comp_mean, comp_stddev);
-	printf("flsh_time: %14.6lf                ms\n", flsh_time);
+	printf("load_time: %14.6lf                ms\n", flsh_time);
 
 	if (!proceed)
 		return 1;
@@ -371,92 +369,7 @@ int main(int argc, char** argv)
 	struct timespec TIMESTAMP_START, TIMESTAMP_STOP;
 
 	T_START;
-
-	/*
-	if (argc < 4) {
-	usage:
-		fprintf(stderr, "USAGE:\n%s [kernel-type] [kernel-size] {kernel-param} [input-file] {output-file}\n", argv[0]);
-		return EXIT_FAILURE;
-	}
-
-	char default_out[] = "out.pgm";
-	
-	int kernel_type = atoi(argv[1]);
-	unsigned int kernel_size = (unsigned int)atoi(argv[2]);
-        char* output_file = default_out;
-	char* input_file;
-	double kernel_param;
-	
-	switch (kernel_type) {
-	case 0:
-	case 2:
-		input_file = argv[3];
-		if (argc == 5)
-			output_file = argv[4];
-		if (argc > 5)
-			goto usage;
-		break;
-	case 1:
-		if (argc < 5) {
-			fprintf(stderr, "Weighted kernel needs one more parameter.\n");
-			return EXIT_FAILURE;
-		}
-		kernel_param = atof(argv[3]);
-		input_file = argv[4];
-		if (argc == 6)
-			output_file = argv[5];
-		if (argc > 6)
-			goto usage;
-		break;
-	default:
-		fprintf(stderr, "Unkown kernel:\n1. Mean kernel\n2. Weighted kernel\n3. Gaussian kernel\n");
-		return EXIT_FAILURE;
-	}
-
-	if (!(kernel_size % 2)) {
-		fprintf(stderr, "Kernel size must be odd.\n");
-		return EXIT_FAILURE;
-	}
-
-	int s = kernel_size / 2;
-
-	pgm_file_t* CLEANUP(cleanup_pgm_file) in_file = open_pgm(input_file, 'r');
-	if (!in_file) {
-		fprintf(stderr, "Error in reading input file: %s.\n", argv[1]);
-		return EXIT_FAILURE;
-	}
-	
-	kernel_t* CLEANUP(cleanup_kernel_t) kernel = NULL;
-
-	switch (kernel_type) {
-	case 0:
-		kernel = mean_kernel((unsigned int)s);
-		break;
-	case 1:
-		kernel = weight_kernel((unsigned int)s, kernel_param);
-		break;
-	case 2:
-		kernel = gaussian_kernel((unsigned int)s);
-	}
-
-	if (!kernel) {
-		fprintf(stderr, "Error in reading kernel file: %s.\n", argv[2]);
-		return EXIT_FAILURE;
-	}
-	
-	pgm_file_t* CLEANUP(cleanup_pgm_file) out_file = open_pgm(output_file, 'w');
-	if (!out_file) {
-		fprintf(stderr, "Error in reading output file: %s.\n", argv[3]);
-		return EXIT_FAILURE;
-	}
-
-	if (blur_pgm(in_file, kernel, out_file)) {
-		fprintf(stderr, "Error in blurring image.\n");
-		return EXIT_FAILURE;
-	}
-	*/
-	
-	
+		
 	if (argc != 4) {
 		fprintf(stderr, "USAGE:\n%s <input> <kernel> <output>\n", argv[0]);
 		return EXIT_FAILURE;
@@ -485,7 +398,6 @@ int main(int argc, char** argv)
 		fprintf(stderr, "Error in blurring image.\n");
 		return EXIT_FAILURE;
 	}
-	
 
 	T_STOP;
 	tot_time = DELTA_mSEC;

@@ -8,7 +8,7 @@ TESTTRG = $(TESTSRC:.c=.x)
 
 CC = gcc
 CFLAGS = -Wall -Wextra -Wpedantic -march=native -O0 -g
-LDFLAGS =
+LDFLAGS = -lm
 
 $(OBJECT): $(SOURCE) $(HEADER)
 	$(CC) -c $(CFLAGS) -o $@ $<
