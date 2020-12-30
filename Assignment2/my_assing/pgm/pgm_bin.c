@@ -76,8 +76,8 @@ int read_pgm(const char* const filename, pgm_file* const pgm)
 		fclose(fp);
 		return -1;
 	}
-	skip_comment(fp);
-
+	fseek(fp, 1, SEEK_CUR);
+	
 	int two_bytes = pgm->maximum_value > UINT8_MAX;
 	size_t img_elements = pgm->width * pgm->height;
 	byte word[2];
@@ -92,7 +92,7 @@ int read_pgm(const char* const filename, pgm_file* const pgm)
 
 		for (size_t read_e = 0; read_e < img_elements; ++read_e) {
 			if (!fread(word, sizeof(dbyte), 1, fp)) {
-				fprintf(stderr, "Invalid format: the file is corrupted.\n");
+				fprintf(stderr, "Invalid format: the file is corrupted after %ld/%ld dbytes\n", read_e, img_elements);
 				fclose(fp);
 				return -1;
 			}

@@ -371,8 +371,7 @@ int main(int argc, char** argv)
 	struct timespec TIMESTAMP_START, TIMESTAMP_STOP;
 
 	T_START;
-
-	/*
+	
 	if (argc < 4) {
 	usage:
 		fprintf(stderr, "USAGE:\n%s [kernel-type] [kernel-size] {kernel-param} [input-file] {output-file}\n", argv[0]);
@@ -454,9 +453,9 @@ int main(int argc, char** argv)
 		fprintf(stderr, "Error in blurring image.\n");
 		return EXIT_FAILURE;
 	}
-	*/
 	
 	
+	/*
 	if (argc != 4) {
 		fprintf(stderr, "USAGE:\n%s <input> <kernel> <output>\n", argv[0]);
 		return EXIT_FAILURE;
@@ -485,7 +484,7 @@ int main(int argc, char** argv)
 		fprintf(stderr, "Error in blurring image.\n");
 		return EXIT_FAILURE;
 	}
-	
+	*/
 
 	T_STOP;
 	tot_time = DELTA_mSEC;

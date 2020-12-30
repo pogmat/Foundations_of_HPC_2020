@@ -325,12 +325,14 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
+	#ifndef KEEP_VIGNETTING
 	if (remove_vignetting_inplace(&new_pgm, &my_kernel)) {
 		fprintf(stderr, "Problem with vignetting.\n");
 		free_kernel(&my_kernel);
 		free_pgm(&original_pgm);
 		free_pgm(&new_pgm);		
 	}
+	#endif
 	
 	if (write_pgm(argv[3], &new_pgm)) {
 		fprintf(stderr, "Problem with pgm file writing.\n");

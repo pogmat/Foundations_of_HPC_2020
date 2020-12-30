@@ -99,7 +99,7 @@ pgm_file_t* open_pgm(const char* const filename, const char mode)
 			fclose(pgm->file);
 			return NULL;
 		}
-		skip_comment(pgm->file);
+		fseek(pgm->file, 1, SEEK_CUR);
 
 		size_t img_size = (pgm->image.width * pgm->image.height)
 			* (1 + (pgm->image.maximum_value > UINT8_MAX));
