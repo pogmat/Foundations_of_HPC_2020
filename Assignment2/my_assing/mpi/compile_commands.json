@@ -5,19 +5,22 @@
       "-c",
       "-I",
       "include",
-      "-fopenmp",
+      "-flto",
+      "-fuse-linker-plugin",
+      "-fivopts",
       "-Wall",
       "-Wextra",
       "-Wpedantic",
-      "-g",
-      "-O0",
+      "-O3",
+      "-march=native",
       "-o",
-      "build/kernel.o",
-      "src/kernel.c"
+      "build/mpi_blur.o",
+      "src/mpi_blur.c",
+      "-pthread"
     ],
-    "directory": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp",
-    "file": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/src/kernel.c",
-    "output": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/build/kernel.o"
+    "directory": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/mpi",
+    "file": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/mpi/src/mpi_blur.c",
+    "output": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/mpi/build/mpi_blur.o"
   },
   {
     "arguments": [
@@ -25,19 +28,22 @@
       "-c",
       "-I",
       "include",
-      "-fopenmp",
+      "-flto",
+      "-fuse-linker-plugin",
+      "-fivopts",
       "-Wall",
       "-Wextra",
       "-Wpedantic",
-      "-g",
-      "-O0",
+      "-O3",
+      "-march=native",
       "-o",
       "build/grid.o",
-      "src/grid.c"
+      "src/grid.c",
+      "-pthread"
     ],
-    "directory": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp",
-    "file": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/src/grid.c",
-    "output": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/build/grid.o"
+    "directory": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/mpi",
+    "file": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/mpi/src/grid.c",
+    "output": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/mpi/build/grid.o"
   },
   {
     "arguments": [
@@ -45,19 +51,22 @@
       "-c",
       "-I",
       "include",
-      "-fopenmp",
+      "-flto",
+      "-fuse-linker-plugin",
+      "-fivopts",
       "-Wall",
       "-Wextra",
       "-Wpedantic",
-      "-g",
-      "-O0",
+      "-O3",
+      "-march=native",
       "-o",
-      "build/omp_blur.o",
-      "src/omp_blur.c"
+      "build/kernel.o",
+      "src/kernel.c",
+      "-pthread"
     ],
-    "directory": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp",
-    "file": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/src/omp_blur.c",
-    "output": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/build/omp_blur.o"
+    "directory": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/mpi",
+    "file": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/mpi/src/kernel.c",
+    "output": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/mpi/build/kernel.o"
   },
   {
     "arguments": [
@@ -65,18 +74,21 @@
       "-c",
       "-I",
       "include",
-      "-fopenmp",
+      "-flto",
+      "-fuse-linker-plugin",
+      "-fivopts",
       "-Wall",
       "-Wextra",
       "-Wpedantic",
-      "-g",
-      "-O0",
+      "-O3",
+      "-march=native",
       "-o",
       "build/pgm_bin.o",
-      "src/pgm_bin.c"
+      "src/pgm_bin.c",
+      "-pthread"
     ],
-    "directory": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp",
-    "file": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/src/pgm_bin.c",
-    "output": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/omp/build/pgm_bin.o"
+    "directory": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/mpi",
+    "file": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/mpi/src/pgm_bin.c",
+    "output": "/home/matteo/Build/git/MHPC/p1.2/Assignment2/my_assing/mpi/build/pgm_bin.o"
   }
 ]

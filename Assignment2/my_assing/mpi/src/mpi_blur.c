@@ -21,9 +21,14 @@
 #define T_STOP clock_gettime(CLOCK_THREAD_CPUTIME_ID, &(TIMESTAMP_STOP))
 #define DELTA_mSEC 1e3 * (double)(TIMESTAMP_STOP.tv_sec - TIMESTAMP_START.tv_sec) + 1e-6 * (double)(TIMESTAMP_STOP.tv_nsec - TIMESTAMP_START.tv_nsec) 
 
-#ifndef _OPENMP
+#ifndef MPI_VERSION
 #warning You are compiling without openmp support!
 #endif
 
 void cleanup_pgm_file(pgm_file_t** f) {close_pgm(f);}
 void cleanup_kernel_t(kernel_t** k) {free_kernel(k);}
+
+int main()
+{
+	return EXIT_SUCCESS;
+}
