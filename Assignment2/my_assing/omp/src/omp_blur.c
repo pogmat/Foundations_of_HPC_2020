@@ -212,7 +212,8 @@ int blur_pgm(const pgm_file_t* const input,
 		
 		if (proceed) {
 			register int s = halo;
-			register real new_value;
+			register real new_value0, new_value1, new_value2, new_value3;
+			int b_start, b_stop, b_stride, b;
 			#ifndef SHARED_KERNEL
 			real* k_p = private_k->kernel;
 			#else
@@ -240,34 +241,73 @@ int blur_pgm(const pgm_file_t* const input,
 				
 				for (int i = frame.writ.i; i < frame.writ.i + frame.writ.h; ++i)
 					for (int j = frame.writ.j; j < frame.writ.j + frame.writ.w; ++j) {
-						new_value = 0.0;
+						new_value0 = 0.0;
+						new_value1 = 0.0;
+						new_value2 = 0.0;
+						new_value3 = 0.0;
 						for (int a = max(0, i - s); a < min(h, i + s + 1); ++a) {
-							for (int b = max(0, j - s); b < min(w, j + s +1) - 1; b += 2) {
+							b_start = max(0, j - s);
+							b_stop  = min(w, j + s +1);
+							b_stride = 16;
+							
+							for (b = b_start; b < b_start + ((b_stop - b_start)/ b_stride) * b_stride; b+=b_stride) {
 								#ifndef PRIVATE_SUBIMAGE
-								new_value +=
+								new_value0 +=
 									(o_p[b + w * a] * k_p[b - j + s + (2 * s +1) * (a - i + s)] +
-									 o_p[b + 1 + w * a] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)]);
+									 o_p[b + 1 + w * a] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b + 2 + w * a] * k_p[b + 2 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b + 3 + w * a] * k_p[b + 3 - j + s + (2 * s +1) * (a - i + s)]);
+								new_value1 +=
+									(o_p[b + 4 + w * a] * k_p[b + 4 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b + 5 + w * a] * k_p[b + 5 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b + 6 + w * a] * k_p[b + 6 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b + 7 + w * a] * k_p[b + 7 - j + s + (2 * s +1) * (a - i + s)]);
+								new_value2 +=
+									(o_p[b + 8 + w * a] * k_p[b + 8 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b + 9 + w * a] * k_p[b + 9 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b +10 + w * a] * k_p[b +10 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b +11 + w * a] * k_p[b +11 - j + s + (2 * s +1) * (a - i + s)]);
+								new_value3 +=
+									(o_p[b +12 + w * a] * k_p[b +12 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b +13 + w * a] * k_p[b +13 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b +14 + w * a] * k_p[b +14 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b +15 + w * a] * k_p[b +15 - j + s + (2 * s +1) * (a - i + s)]);
 								#else
 								#warning PRIVATE_SUBIMAGE enabled
-								new_value +=
+								new_value0 +=
 									(o_p[b - frame.read.j + frame.read.w * (a - frame.read.i)] * k_p[b - j + s + (2 * s +1) * (a - i + s)] +
-									 o_p[b - frame.read.j + 1 + frame.read.w * (a - frame.read.i)] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)]);
+									 o_p[b - frame.read.j + 1 + frame.read.w * (a - frame.read.i)] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 2 + frame.read.w * (a - frame.read.i)] * k_p[b + 2 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 3 + frame.read.w * (a - frame.read.i)] * k_p[b + 3 - j + s + (2 * s +1) * (a - i + s)]);
+								new_value1 +=
+									(o_p[b - frame.read.j + 4 + frame.read.w * (a - frame.read.i)] * k_p[b + 4 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 5 + frame.read.w * (a - frame.read.i)] * k_p[b + 5 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 6 + frame.read.w * (a - frame.read.i)] * k_p[b + 6 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 7 + frame.read.w * (a - frame.read.i)] * k_p[b + 7 - j + s + (2 * s +1) * (a - i + s)]);
+								new_value2 +=
+									(o_p[b - frame.read.j + 8 + frame.read.w * (a - frame.read.i)] * k_p[b + 8 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 9 + frame.read.w * (a - frame.read.i)] * k_p[b + 9 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j +10 + frame.read.w * (a - frame.read.i)] * k_p[b +10 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j +11 + frame.read.w * (a - frame.read.i)] * k_p[b +11 - j + s + (2 * s +1) * (a - i + s)]);
+								new_value3 +=
+									(o_p[b - frame.read.j +12 + frame.read.w * (a - frame.read.i)] * k_p[b +12 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j +13 + frame.read.w * (a - frame.read.i)] * k_p[b +13 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j +14 + frame.read.w * (a - frame.read.i)] * k_p[b +14 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j +15 + frame.read.w * (a - frame.read.i)] * k_p[b +15 - j + s + (2 * s +1) * (a - i + s)]);
 								#endif
 							}
-							if ((min(w, j + s +1) - max(0, j - s)) % 2) {
+							
+							for (; b < b_stop; ++b) {
 								#ifndef PRIVATE_SUBIMAGE
-								new_value +=
-									o_p[min(w, j + s +1) - 1 + w * a] * k_p[min(w, j + s +1) - 1 - j + s + (2 * s +1) * (a - i + s)];
+								new_value0 += 
+									o_p[b + w * a] * k_p[b - j + s + (2 * s +1) * (a - i + s)];
 								#else
-								#warning PRIVATE_SUBIMAGE enabled
-								new_value +=
-									o_p[min(w, j + s +1) - 1 - frame.read.j+ frame.read.w * (a - frame.read.i)]
-									* k_p[min(w, j + s +1) - 1 - j + s + (2 * s +1) * (a - i + s)];							       
+								new_value0 +=
+									o_p[b - frame.read.j + frame.read.w * (a - frame.read.i)] * k_p[b - j + s + (2 * s +1) * (a - i + s)];	
 								#endif
-							}
+							}							
 						}
-						n_p[j + w * i] = (dbyte)min(UINT16_MAX, (uint64_t)(new_value + 0.5));
-						//printf("### %d\n", n_p[j + w * i]);
+						n_p[j + w * i] = (dbyte)((new_value0 + new_value1) + (new_value2 + new_value3));
 					}
 
 			} else {
@@ -283,37 +323,78 @@ int blur_pgm(const pgm_file_t* const input,
 				#warning PRIVATE SUBIMAGE enabled
 				byte* o_p = private_i;
 				#endif
-
 				for (int i = frame.writ.i; i < frame.writ.i + frame.writ.h; ++i)
 					for (int j = frame.writ.j; j < frame.writ.j + frame.writ.w; ++j) {
-						new_value = 0.0;
+						new_value0 = 0.0;
+						new_value1 = 0.0;
+						new_value2 = 0.0;
+						new_value3 = 0.0;
 						for (int a = max(0, i - s); a < min(h, i + s + 1); ++a) {
-							for (int b = max(0, j - s); b < min(w, j + s +1) - 1; b += 2) {
+							b_start = max(0, j - s);
+							b_stop  = min(w, j + s +1);
+							b_stride = 16;
+							
+							for (b = b_start; b < b_start + ((b_stop - b_start)/ b_stride) * b_stride; b+=b_stride) {
 								#ifndef PRIVATE_SUBIMAGE
-								new_value +=
+								new_value0 +=
 									(o_p[b + w * a] * k_p[b - j + s + (2 * s +1) * (a - i + s)] +
-									 o_p[b + 1 + w * a] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)]);
+									 o_p[b + 1 + w * a] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b + 2 + w * a] * k_p[b + 2 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b + 3 + w * a] * k_p[b + 3 - j + s + (2 * s +1) * (a - i + s)]);
+								new_value1 +=
+									(o_p[b + 4 + w * a] * k_p[b + 4 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b + 5 + w * a] * k_p[b + 5 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b + 6 + w * a] * k_p[b + 6 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b + 7 + w * a] * k_p[b + 7 - j + s + (2 * s +1) * (a - i + s)]);
+								new_value2 +=
+									(o_p[b + 8 + w * a] * k_p[b + 8 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b + 9 + w * a] * k_p[b + 9 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b +10 + w * a] * k_p[b +10 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b +11 + w * a] * k_p[b +11 - j + s + (2 * s +1) * (a - i + s)]);
+								new_value3 +=
+									(o_p[b +12 + w * a] * k_p[b +12 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b +13 + w * a] * k_p[b +13 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b +14 + w * a] * k_p[b +14 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b +15 + w * a] * k_p[b +15 - j + s + (2 * s +1) * (a - i + s)]);
 								#else
-								#warning PRIVATE SUBIMAGE enabled
-								new_value +=
+								#warning PRIVATE_SUBIMAGE enabled
+								new_value0 +=
 									(o_p[b - frame.read.j + frame.read.w * (a - frame.read.i)] * k_p[b - j + s + (2 * s +1) * (a - i + s)] +
-									 o_p[b - frame.read.j + 1 + frame.read.w * (a - frame.read.i)] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)]);
+									 o_p[b - frame.read.j + 1 + frame.read.w * (a - frame.read.i)] * k_p[b + 1 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 2 + frame.read.w * (a - frame.read.i)] * k_p[b + 2 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 3 + frame.read.w * (a - frame.read.i)] * k_p[b + 3 - j + s + (2 * s +1) * (a - i + s)]);
+								new_value1 +=
+									(o_p[b - frame.read.j + 4 + frame.read.w * (a - frame.read.i)] * k_p[b + 4 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 5 + frame.read.w * (a - frame.read.i)] * k_p[b + 5 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 6 + frame.read.w * (a - frame.read.i)] * k_p[b + 6 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 7 + frame.read.w * (a - frame.read.i)] * k_p[b + 7 - j + s + (2 * s +1) * (a - i + s)]);
+								new_value2 +=
+									(o_p[b - frame.read.j + 8 + frame.read.w * (a - frame.read.i)] * k_p[b + 8 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j + 9 + frame.read.w * (a - frame.read.i)] * k_p[b + 9 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j +10 + frame.read.w * (a - frame.read.i)] * k_p[b +10 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j +11 + frame.read.w * (a - frame.read.i)] * k_p[b +11 - j + s + (2 * s +1) * (a - i + s)]);
+								new_value3 +=
+									(o_p[b - frame.read.j +12 + frame.read.w * (a - frame.read.i)] * k_p[b +12 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j +13 + frame.read.w * (a - frame.read.i)] * k_p[b +13 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j +14 + frame.read.w * (a - frame.read.i)] * k_p[b +14 - j + s + (2 * s +1) * (a - i + s)] +
+									 o_p[b - frame.read.j +15 + frame.read.w * (a - frame.read.i)] * k_p[b +15 - j + s + (2 * s +1) * (a - i + s)]);
 								#endif
 							}
-							if ((min(w, j + s +1) - max(0, j - s)) % 2) {
+							
+							for (; b < b_stop; ++b) {
 								#ifndef PRIVATE_SUBIMAGE
-								new_value +=
-									o_p[min(w, j + s +1) - 1 + w * a] * k_p[min(w, j + s +1) - 1 - j + s + (2 * s +1) * (a - i + s)];
+								new_value0 += 
+									o_p[b + w * a] * k_p[b - j + s + (2 * s +1) * (a - i + s)];
 								#else
-								#warning PRIVATE SUBIMAGE enabled
-								new_value +=
-									o_p[min(w, j + s +1) - 1 - frame.read.j+ frame.read.w * (a - frame.read.i)]
-									* k_p[min(w, j + s +1) - 1 - j + s + (2 * s +1) * (a - i + s)];							       
-								#endif								
-							}
+								new_value0 +=
+									o_p[b - frame.read.j + frame.read.w * (a - frame.read.i)] * k_p[b - j + s + (2 * s +1) * (a - i + s)];	
+								#endif
+							}							
 						}
-						n_p[j + w * i] = (byte)min(UINT8_MAX, (uint64_t)(new_value + 0.5));
+						n_p[j + w * i] = (byte)((new_value0 + new_value1) + (new_value2 + new_value3));
 					}
+
+
 			}
 
 			// ##### END COMP PHASE #####
