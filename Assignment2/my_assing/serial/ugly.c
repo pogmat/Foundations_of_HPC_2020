@@ -40,7 +40,7 @@ int blur_pgm(const pgm_file* const original,
 					for (int b = max(0, j - s); b < min(w, j + s +1); ++b)
 						new_value +=
 							o_p[b + w * a] * k_p[b - j + s + (2 * s +1) * (a - i + s)];
-				n_p[j + w * i] = (dbyte)min(UINT16_MAX, (uint64_t)(new_value + 0.5));
+				n_p[j + w * i] = (dbyte)new_value;
 			}		
 
 	} else {
@@ -55,7 +55,7 @@ int blur_pgm(const pgm_file* const original,
 					for (int b = max(0, j - s); b < min(w, j + s +1); ++b)
 						new_value +=
 							o_p[b + w * a] * k_p[b - j + s + (2 * s +1) * (a - i + s)];
-				n_p[j + w * i] = (byte)min(UINT8_MAX, (uint64_t)(new_value + 0.5));
+				n_p[j + w * i] = (byte)new_value;
 			}
 	}
      	
