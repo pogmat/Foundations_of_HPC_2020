@@ -23,6 +23,33 @@ typedef struct {
 	long offset;
 } metadata_t;
 
+MPI_Datatype* MPI_metadata_commit()
+{
+	MPI_Datatype* MPI_metadata = (MPI_Datatype*)malloc(sizeof(MPI_metadata));
+	if (!MPI_metadata) {
+		fprintf(stderr, "Bad allocation.\n");
+		return NULL;
+	}
+	
+	metadata_t sample;
+
+	int len[5] = {3, 1, 1, 1, 1};
+	MPI_Datatype types[5] = {MPI_CHAR, MPI_INT, MPI_INT, MPI_INT, MPI_LONG};
+	MPI_Aint displ[5];
+	MPI_Get_address(&sample.magic, displ);
+	MPI_Get_address(&sample.w, displ + 1);
+	MPI_Get_address(&sample.h, displ + 2);
+	MPI_Get_address(&sample.dept, displ + 3);
+	MPI_Get_address(&sample.offset, displ + 4);
+	MPI_Aint base = displ[0];
+	for (int i = 0; i < 5; ++i)
+		displ[i] = MPI_Aint_diff(displ[i], base);
+	MPI_Type_create_struct(5, len, displ, types, MPI_metadata);
+	MPI_Type_commit(MPI_metadata);
+
+	return MPI_metadata;
+}
+
 typedef struct {
 	int w;
 	int h;
@@ -42,6 +69,31 @@ typedef struct {
 
 static inline int min(const int a, const int b) {return((a < b) ? a : b);}
 static inline int max(const int a, const int b) {return((a > b) ? a : b);}
+
+MPI_Datatype* MPI_commit_frame(int w, int h,
+			       int frame_w, int frame_h,
+			       int frame_i, int frame_j)
+{
+	MPI_Datatype* frame = (MPI_Datatype*)malloc(sizeof(MPI_Datatype));
+	if (!frame) {
+		fprintf(stderr, "Bad allocation.\n");
+		return NULL;
+	}
+	
+	int subarray_dim[2] = {frame_h, frame_w};
+	int start_point[2] = {frame_i, frame_j};
+	int array_dim[2] = {h, w};
+	MPI_Type_create_subarray(2,
+				 array_dim,
+				 subarray_dim,
+				 start_point,
+				 MPI_ORDER_C,
+				 MPI_UINT16_T,
+				 frame);
+	MPI_Type_commit(frame);
+
+	return frame;
+}
 
 double get_luminosity(const kernel_t* const k)
 {
@@ -173,6 +225,20 @@ void cleanup_uint16_t(uint16_t** pp)
 		free(*pp);
 
 	*pp = NULL;
+}
+void cleanup_MPI_Datatype(MPI_Datatype** pp)
+{
+	if (*pp)
+		MPI_Type_free(*pp);
+
+	*pp = NULL;
+}
+void cleanup_MPI_File(MPI_File* p)
+{
+	if (*p != MPI_FILE_NULL)
+		MPI_File_close(p);
+
+	*p = MPI_FILE_NULL;
 }
 
 static void skip_comment(FILE * const fp)
@@ -388,13 +454,30 @@ uint16_t* blur_frame(const uint16_t* restrict original,
 	return blurred;
 }
 
+__attribute__((constructor))
+void begin(int argc, char** argv)
+{
+	if (MPI_Init(&argc, &argv) != MPI_SUCCESS) {
+		MPI_Abort(MPI_COMM_WORLD, 1);
+		exit(EXIT_FAILURE);
+	}
+}
+
+
+__attribute__((destructor))
+void end()
+{
+	MPI_Finalize();
+}
+
+
 int main(int argc, char** argv)
 {
-	MPI_Init(&argc, &argv);
-
+	
 	int total, id;
+	double time = -MPI_Wtime();
 
-	MPI_Comm_size(MPI_COMM_WORLD, &total);
+      	MPI_Comm_size(MPI_COMM_WORLD, &total);
 	MPI_Comm_rank(MPI_COMM_WORLD, &id);
 
 	if (argc < 4) {
@@ -463,30 +546,15 @@ int main(int argc, char** argv)
 	}
 
 	metadata_t metadata;
-	MPI_Datatype MPI_metadata;
-	{
-		int len[5] = {3, 1, 1, 1, 1};
-		MPI_Datatype types[5] = {MPI_CHAR, MPI_INT, MPI_INT, MPI_INT, MPI_LONG};
-		MPI_Aint displ[5];
-		MPI_Get_address(&metadata.magic, displ);
-		MPI_Get_address(&metadata.w, displ + 1);
-		MPI_Get_address(&metadata.h, displ + 2);
-		MPI_Get_address(&metadata.dept, displ + 3);
-		MPI_Get_address(&metadata.offset, displ + 4);
-		MPI_Aint base = displ[0];
-		for (int i = 0; i < 5; ++i)
-			displ[i] = MPI_Aint_diff(displ[i], base);
-		MPI_Type_create_struct(5, len, displ, types, &MPI_metadata);
-		MPI_Type_commit(&MPI_metadata);
-	}
-	
+	MPI_Datatype* CLEANUP(cleanup_MPI_Datatype) MPI_metadata = MPI_metadata_commit();
+
 	if (id == MASTER) {
 		if(pgm_get_metadata(input_filename, &metadata)) {
 			fprintf(stderr, "Problem in reading metadata in %s.\n", input_filename);
 			EXIT_FAILURE;
 		}
 	}
-	MPI_Bcast(&metadata, 1, MPI_metadata, MASTER, MPI_COMM_WORLD);
+	MPI_Bcast(&metadata, 1, *MPI_metadata, MASTER, MPI_COMM_WORLD);
        	#ifdef DEBUG
 	printf("[NODE %3d] w = %d, h = %d, dept = %d, offset = %ld\n",
 	       id, metadata.w, metadata.h, metadata.dept, metadata.offset);
@@ -522,39 +590,19 @@ int main(int argc, char** argv)
 	       frame.writ.j, frame.writ.i);	
 	#endif
 
-	int array_dim[2] = {metadata.h, metadata.w};
+	MPI_Datatype* CLEANUP(cleanup_MPI_Datatype) read_frame = MPI_commit_frame(metadata.w, metadata.h,
+										  frame.read.w, frame.read.h,
+										  frame.read.i, frame.read.j);
 
-	MPI_Datatype read_frame;
-	{
-		int subarray_dim[2] = {frame.read.h, frame.read.w};
-		int start_point[2] = {frame.read.i, frame.read.j};
-		MPI_Type_create_subarray(2,
-					 array_dim,
-					 subarray_dim,
-					 start_point,
-					 MPI_ORDER_C,
-					 MPI_UINT16_T,
-					 &read_frame);
-		MPI_Type_commit(&read_frame);
-	}
 
-	//int pixel_size = 1 + metadata.dept > UINT8_MAX;
-	uint16_t* in_data = (uint16_t*)malloc(2 * metadata.w * metadata.h);
-	if (!in_data) {
-		fprintf(stderr, "Bad allocation.\n");
-		// TODO: do some cleanup
-		MPI_Type_free(&read_frame);
-		MPI_Type_free(&MPI_metadata);
-		MPI_Finalize();
-		return EXIT_FAILURE;
-	}
+	uint16_t* CLEANUP(cleanup_uint16_t) in_data = (uint16_t*)malloc(2 * metadata.w * metadata.h);
 
-	MPI_File input_file;
+	MPI_File CLEANUP(cleanup_MPI_File) input_file;
 	MPI_File_open(MPI_COMM_WORLD, input_filename, MPI_MODE_RDONLY, MPI_INFO_NULL, &input_file);
         MPI_File_set_view(input_file,
 			  (MPI_Offset)metadata.offset,
 			  MPI_UINT16_T,
-			  read_frame,
+			  *read_frame,
 			  "native",
 			  MPI_INFO_NULL);
 	MPI_File_read(input_file,
@@ -571,31 +619,20 @@ int main(int argc, char** argv)
 			EXIT_FAILURE;
 		}
 	}
-	MPI_Bcast(&metadata, 1, MPI_metadata, MASTER, MPI_COMM_WORLD);
+	MPI_Bcast(&metadata, 1, *MPI_metadata, MASTER, MPI_COMM_WORLD);
 
 	uint16_t* CLEANUP(cleanup_uint16_t) out_data = blur_frame(in_data, &frame, kernel); 
 	
-	MPI_Datatype writ_frame;
-	{
-		int subarray_dim[2] = {frame.writ.h, frame.writ.w};
-		int start_point[2] = {frame.writ.i, frame.writ.j};
-		MPI_Type_create_subarray(2,
-					 array_dim,
-					 subarray_dim,
-					 start_point,
-					 MPI_ORDER_C,
-					  MPI_UINT16_T,
-					 &writ_frame);
-		MPI_Type_commit(&writ_frame);
-	}
-		
-	
-	MPI_File output_file;
+	MPI_Datatype* CLEANUP(cleanup_MPI_Datatype) writ_frame = MPI_commit_frame(metadata.w, metadata.h,
+										  frame.writ.w, frame.writ.h,
+										  frame.writ.i, frame.writ.j);
+
+	MPI_File CLEANUP(cleanup_MPI_File) output_file;
 	MPI_File_open(MPI_COMM_WORLD, output_filename, MPI_MODE_WRONLY, MPI_INFO_NULL, &output_file);
         MPI_File_set_view(output_file,
 			  (MPI_Offset)metadata.offset,
 			  MPI_UINT16_T,
-			  writ_frame,
+			  *writ_frame,
 			  "native",
 			  MPI_INFO_NULL);
 	endian_swap(out_data, frame.writ.w * frame.writ.h);
@@ -605,12 +642,13 @@ int main(int argc, char** argv)
 		      MPI_UINT16_T,
 		      MPI_STATUS_IGNORE);
 
-	MPI_File_close(&output_file);
-	MPI_Type_free(&writ_frame);	
-	free(in_data);
-	MPI_File_close(&input_file);
-	MPI_Type_free(&read_frame);
-	MPI_Type_free(&MPI_metadata);
-	MPI_Finalize();
-	return EXIT_SUCCESS;
+	time += MPI_Wtime();
+	double delta_t;
+	MPI_Reduce(&time, &delta_t, 1, MPI_DOUBLE, MPI_MAX, MASTER, MPI_COMM_WORLD);
+
+	if (id == MASTER) {
+		printf("Elapsed time: %lf s.\n", delta_t);
+	}
+
+	return 0;
 }
