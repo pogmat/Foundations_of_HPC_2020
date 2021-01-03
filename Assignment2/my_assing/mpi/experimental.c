@@ -715,7 +715,7 @@ int main(int argc, char** argv)
 	MPI_Reduce(&time, &delta_t, 1, MPI_DOUBLE, MPI_MAX, MASTER, MPI_COMM_WORLD);
 
 	if (id == MASTER) {
-		printf("Elapsed time: %lf s.\n", delta_t);
+		printf("Elapsed time with %3d nodes: %15.6lf s.\n", total, delta_t);
 	}
 
 	return EXIT_SUCCESS;
