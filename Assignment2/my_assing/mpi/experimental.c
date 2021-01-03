@@ -457,10 +457,7 @@ uint16_t* blur_frame(const uint16_t* restrict original,
 __attribute__((constructor))
 void begin(int argc, char** argv)
 {
-	if (MPI_Init(&argc, &argv) != MPI_SUCCESS) {
-		MPI_Abort(MPI_COMM_WORLD, 1);
-		exit(EXIT_FAILURE);
-	}
+	MPI_Init(&argc, &argv);
 }
 
 
@@ -506,6 +503,7 @@ int main(int argc, char** argv)
 	case 1:
 		if (argc < 5) {
 			fprintf(stderr, "Weighted kernel needs one more parameter.\n");
+			MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 			return EXIT_FAILURE;
 		}
 		kernel_param = atof(argv[3]);
@@ -522,6 +520,7 @@ int main(int argc, char** argv)
 
 	if (!(kernel_size % 2)) {
 		fprintf(stderr, "Kernel size must be odd.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		return EXIT_FAILURE;
 	}
 
@@ -542,15 +541,22 @@ int main(int argc, char** argv)
 
 	if (!kernel) {
 		fprintf(stderr, "Error in reading kernel file: %s.\n", argv[2]);
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		return EXIT_FAILURE;
 	}
 
 	metadata_t metadata;
 	MPI_Datatype* CLEANUP(cleanup_MPI_Datatype) MPI_metadata = MPI_metadata_commit();
+	if (!MPI_metadata) {
+		fprintf(stderr, "Problem in committing MPI_metadata.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+		return EXIT_FAILURE;
+	}
 
 	if (id == MASTER) {
 		if(pgm_get_metadata(input_filename, &metadata)) {
 			fprintf(stderr, "Problem in reading metadata in %s.\n", input_filename);
+			MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 			EXIT_FAILURE;
 		}
 	}
@@ -593,24 +599,56 @@ int main(int argc, char** argv)
 	MPI_Datatype* CLEANUP(cleanup_MPI_Datatype) read_frame = MPI_commit_frame(metadata.w, metadata.h,
 										  frame.read.w, frame.read.h,
 										  frame.read.i, frame.read.j);
-
+	if (!read_frame) {
+		fprintf(stderr, "Problem in committing read_frame.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+		return EXIT_FAILURE;
+	}
 
 	uint16_t* CLEANUP(cleanup_uint16_t) in_data = (uint16_t*)malloc(2 * metadata.w * metadata.h);
+	if (!in_data) {
+		fprintf(stderr, "Problem in allocating input data.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+		return EXIT_FAILURE;
+	}
 
+	MPI_Status io_status;
+	
 	MPI_File CLEANUP(cleanup_MPI_File) input_file;
-	MPI_File_open(MPI_COMM_WORLD, input_filename, MPI_MODE_RDONLY, MPI_INFO_NULL, &input_file);
-        MPI_File_set_view(input_file,
-			  (MPI_Offset)metadata.offset,
+	if (MPI_File_open(MPI_COMM_WORLD,
+			  input_filename,
+			  MPI_MODE_RDONLY,
+			  MPI_INFO_NULL,
+			  &input_file) != MPI_SUCCESS) {
+		fprintf(stderr, "Problem in opening input file for MPI.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+		return EXIT_FAILURE;		
+	}
+        if (MPI_File_set_view(input_file,
+			      (MPI_Offset)metadata.offset,
+			      MPI_UINT16_T,
+			      *read_frame,
+			      "native",
+			      MPI_INFO_NULL) != MPI_SUCCESS) {
+		fprintf(stderr, "Problem in setting view to input file for MPI.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+		return EXIT_FAILURE;
+	}
+	if (MPI_File_read(input_file,
+			  in_data,
+			  frame.read.w * frame.read.h,
 			  MPI_UINT16_T,
-			  *read_frame,
-			  "native",
-			  MPI_INFO_NULL);
-	MPI_File_read(input_file,
-		      in_data,
-		      frame.read.w * frame.read.h,
-		      MPI_UINT16_T,
-		      MPI_STATUS_IGNORE);
-	endian_swap(in_data, frame.read.w * frame.read.h);
+			  &io_status) != MPI_SUCCESS) {
+		fprintf(stderr, "Problem in reading from input file for MPI.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+		return EXIT_FAILURE;
+	}
+		if (io_status._ucount != 2 * (size_t)frame.read.w * (size_t)frame.read.h) {
+		fprintf(stderr, "Problem in reading from input file for MPI.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+		return EXIT_FAILURE;
+	}
+		endian_swap(in_data, frame.read.w * frame.read.h);
 	
 	
 	if (id == MASTER) {
@@ -621,27 +659,57 @@ int main(int argc, char** argv)
 	}
 	MPI_Bcast(&metadata, 1, *MPI_metadata, MASTER, MPI_COMM_WORLD);
 
-	uint16_t* CLEANUP(cleanup_uint16_t) out_data = blur_frame(in_data, &frame, kernel); 
+	uint16_t* CLEANUP(cleanup_uint16_t) out_data = blur_frame(in_data, &frame, kernel);
+	if (!out_data) {
+		fprintf(stderr, "Problem in allocating output data.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+		return EXIT_FAILURE;
+	}
 	
 	MPI_Datatype* CLEANUP(cleanup_MPI_Datatype) writ_frame = MPI_commit_frame(metadata.w, metadata.h,
 										  frame.writ.w, frame.writ.h,
 										  frame.writ.i, frame.writ.j);
+	if (!writ_frame) {
+		fprintf(stderr, "Problem in committing writ_frame.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+		return EXIT_FAILURE;
+	}
 
 	MPI_File CLEANUP(cleanup_MPI_File) output_file;
-	MPI_File_open(MPI_COMM_WORLD, output_filename, MPI_MODE_WRONLY, MPI_INFO_NULL, &output_file);
-        MPI_File_set_view(output_file,
-			  (MPI_Offset)metadata.offset,
-			  MPI_UINT16_T,
-			  *writ_frame,
-			  "native",
-			  MPI_INFO_NULL);
+	if (MPI_File_open(MPI_COMM_WORLD,
+			  output_filename,
+			  MPI_MODE_WRONLY,
+			  MPI_INFO_NULL,
+			  &output_file) != MPI_SUCCESS) {
+		fprintf(stderr, "Problem in opening output file for MPI.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+		return EXIT_FAILURE;
+	}
+        if (MPI_File_set_view(output_file,
+			      (MPI_Offset)metadata.offset,
+			      MPI_UINT16_T,
+			      *writ_frame,
+			      "native",
+			      MPI_INFO_NULL) != MPI_SUCCESS) {
+		fprintf(stderr, "Problem in setting view to output file for MPI.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+		return EXIT_FAILURE;
+	}
 	endian_swap(out_data, frame.writ.w * frame.writ.h);
-	MPI_File_write(output_file,
-		      out_data,
-		      frame.writ.w * frame.writ.h,
-		      MPI_UINT16_T,
-		      MPI_STATUS_IGNORE);
-
+	if (MPI_File_write(output_file,
+			   out_data,
+			   frame.writ.w * frame.writ.h,
+			   MPI_UINT16_T,
+			   &io_status) != MPI_SUCCESS) {
+		fprintf(stderr, "Problem in writing to output file for MPI.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+		return EXIT_FAILURE;
+	}
+	if (io_status._ucount != 2 * (size_t)frame.writ.w * (size_t)frame.writ.h) {
+		fprintf(stderr, "Problem in reading from input file for MPI.\n");
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+		return EXIT_FAILURE;
+	}
 	time += MPI_Wtime();
 	double delta_t;
 	MPI_Reduce(&time, &delta_t, 1, MPI_DOUBLE, MPI_MAX, MASTER, MPI_COMM_WORLD);
@@ -650,5 +718,5 @@ int main(int argc, char** argv)
 		printf("Elapsed time: %lf s.\n", delta_t);
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }
