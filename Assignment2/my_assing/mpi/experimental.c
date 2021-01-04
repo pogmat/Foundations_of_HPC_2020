@@ -72,7 +72,8 @@ static inline int max(const int a, const int b) {return((a > b) ? a : b);}
 
 MPI_Datatype* MPI_commit_frame(int w, int h,
 			       int frame_w, int frame_h,
-			       int frame_i, int frame_j)
+			       int frame_i, int frame_j,
+			       MPI_Datatype type)
 {
 	MPI_Datatype* frame = (MPI_Datatype*)malloc(sizeof(MPI_Datatype));
 	if (!frame) {
@@ -88,7 +89,7 @@ MPI_Datatype* MPI_commit_frame(int w, int h,
 				 subarray_dim,
 				 start_point,
 				 MPI_ORDER_C,
-				 MPI_UINT16_T,
+				 type,
 				 frame);
 	MPI_Type_commit(frame);
 
@@ -219,7 +220,7 @@ kernel_t* gaussian_kernel(const unsigned int s)
 
 void cleanup_kernel_t(kernel_t** k) {free_kernel(k);}
 void cleanup_file(FILE** fpp) {fclose(*fpp);}
-void cleanup_uint16_t(uint16_t** pp)
+void cleanup_void(void** pp)
 {
 	if (*pp)
 		free(*pp);
@@ -401,9 +402,10 @@ void endian_swap(uint16_t* data, size_t size)
 
 uint16_t* blur_frame(const uint16_t* restrict original,
 		     const thimg_t* restrict frame,
-		     const kernel_t* restrict kernel)
+		     const kernel_t* restrict kernel,
+		     const int pixel_size)
 {
-	uint16_t* blurred = (uint16_t*)malloc(2 * frame->writ.w * frame->writ.h);
+	void* blurred = malloc(pixel_size * frame->writ.w * frame->writ.h);
 	if (!blurred) {
 		fprintf(stderr, "Bad allocation.\n");
 		return NULL;
@@ -414,42 +416,87 @@ uint16_t* blur_frame(const uint16_t* restrict original,
 	const int b_stride = 16;
 	register int s = kernel->s;
 
+	if (pixel_size == 2) {
 
-	for (int i = 0; i < frame->writ.h; ++i)
-		for (int j = 0; j < frame->writ.w; ++j) {
-			t0 = t1 = t2 = t3 = 0;
-			i_offset = frame->writ.i - frame->read.i;
-			j_offset = frame->writ.j - frame->read.j;
+		uint16_t* i_16 = (uint16_t*)original;
+		uint16_t* o_16 = (uint16_t*)blurred;
 
-			for (int a = max(0, i + i_offset - s); a < min(frame->read.h, i + i_offset + s + 1); ++a) {
-				o_offset = frame->read.w * a;
-				k_offset = - j - j_offset + s + (2 * s + 1) * (a - i - i_offset + s);
-				b_start = max(0, j + j_offset - s);
-				b_stop = min(frame->read.w, j + j_offset + s + 1);
-				for (b = b_start; b < ((b_stop - b_start) / b_stride) * b_stride; b += b_stride) {
-					t0 += (original[b +     o_offset] * k[b +     k_offset] +
-					       original[b + 1 + o_offset] * k[b + 1 + k_offset] +
-					       original[b + 2 + o_offset] * k[b + 2 + k_offset] +
-					       original[b + 3 + o_offset] * k[b + 3 + k_offset]);
-					t1 += (original[b + 4 + o_offset] * k[b + 4 + k_offset] +
-					       original[b + 5 + o_offset] * k[b + 5 + k_offset] +
-					       original[b + 6 + o_offset] * k[b + 6 + k_offset] +
-					       original[b + 7 + o_offset] * k[b + 7 + k_offset]);
-					t2 += (original[b + 8 + o_offset] * k[b + 8 + k_offset] +
-					       original[b + 9 + o_offset] * k[b + 9 + k_offset] +
-					       original[b +10 + o_offset] * k[b +10 + k_offset] +
-					       original[b +11 + o_offset] * k[b +11 + k_offset]);					
-					t3 += (original[b +12 + o_offset] * k[b +12 + k_offset] +
-					       original[b +13 + o_offset] * k[b +13 + k_offset] +
-					       original[b +14 + o_offset] * k[b +14 + k_offset] +
-					       original[b +15 + o_offset] * k[b +15 + k_offset]);				       
+		for (int i = 0; i < frame->writ.h; ++i)
+			for (int j = 0; j < frame->writ.w; ++j) {
+				t0 = t1 = t2 = t3 = 0;
+				i_offset = frame->writ.i - frame->read.i;
+				j_offset = frame->writ.j - frame->read.j;
+
+				for (int a = max(0, i + i_offset - s); a < min(frame->read.h, i + i_offset + s + 1); ++a) {
+					o_offset = frame->read.w * a;
+					k_offset = - j - j_offset + s + (2 * s + 1) * (a - i - i_offset + s);
+					b_start = max(0, j + j_offset - s);
+					b_stop = min(frame->read.w, j + j_offset + s + 1);
+					for (b = b_start; b < ((b_stop - b_start) / b_stride) * b_stride; b += b_stride) {
+						t0 += (i_16[b +     o_offset] * k[b +     k_offset] +
+						       i_16[b + 1 + o_offset] * k[b + 1 + k_offset] +
+						       i_16[b + 2 + o_offset] * k[b + 2 + k_offset] +
+						       i_16[b + 3 + o_offset] * k[b + 3 + k_offset]);
+						t1 += (i_16[b + 4 + o_offset] * k[b + 4 + k_offset] +
+						       i_16[b + 5 + o_offset] * k[b + 5 + k_offset] +
+						       i_16[b + 6 + o_offset] * k[b + 6 + k_offset] +
+						       i_16[b + 7 + o_offset] * k[b + 7 + k_offset]);
+						t2 += (i_16[b + 8 + o_offset] * k[b + 8 + k_offset] +
+						       i_16[b + 9 + o_offset] * k[b + 9 + k_offset] +
+						       i_16[b +10 + o_offset] * k[b +10 + k_offset] +
+						       i_16[b +11 + o_offset] * k[b +11 + k_offset]);					
+						t3 += (i_16[b +12 + o_offset] * k[b +12 + k_offset] +
+						       i_16[b +13 + o_offset] * k[b +13 + k_offset] +
+						       i_16[b +14 + o_offset] * k[b +14 + k_offset] +
+						       i_16[b +15 + o_offset] * k[b +15 + k_offset]);				       
+					}
+
+					for (; b < b_stop; ++b)
+						t0 += i_16[b + o_offset] * k[b + k_offset];
 				}
-
-				for (; b < b_stop; ++b)
-					t0 += original[b + o_offset] * k[b + k_offset];
+				o_16[j + frame->writ.w * i] = (uint16_t)((t0 + t1) + (t2 + t3));
 			}
-			blurred[j + frame->writ.w * i] = (uint16_t)((t0 + t1) + (t2 + t3));
-		}
+	} else {
+		uint8_t* i_8 = (uint8_t*)original;
+		uint8_t* o_8 = (uint8_t*)blurred;
+
+		for (int i = 0; i < frame->writ.h; ++i)
+			for (int j = 0; j < frame->writ.w; ++j) {
+				t0 = t1 = t2 = t3 = 0;
+				i_offset = frame->writ.i - frame->read.i;
+				j_offset = frame->writ.j - frame->read.j;
+
+				for (int a = max(0, i + i_offset - s); a < min(frame->read.h, i + i_offset + s + 1); ++a) {
+					o_offset = frame->read.w * a;
+					k_offset = - j - j_offset + s + (2 * s + 1) * (a - i - i_offset + s);
+					b_start = max(0, j + j_offset - s);
+					b_stop = min(frame->read.w, j + j_offset + s + 1);
+					for (b = b_start; b < ((b_stop - b_start) / b_stride) * b_stride; b += b_stride) {
+						t0 += (i_8[b +     o_offset] * k[b +     k_offset] +
+						       i_8[b + 1 + o_offset] * k[b + 1 + k_offset] +
+						       i_8[b + 2 + o_offset] * k[b + 2 + k_offset] +
+						       i_8[b + 3 + o_offset] * k[b + 3 + k_offset]);
+						t1 += (i_8[b + 4 + o_offset] * k[b + 4 + k_offset] +
+						       i_8[b + 5 + o_offset] * k[b + 5 + k_offset] +
+						       i_8[b + 6 + o_offset] * k[b + 6 + k_offset] +
+						       i_8[b + 7 + o_offset] * k[b + 7 + k_offset]);
+						t2 += (i_8[b + 8 + o_offset] * k[b + 8 + k_offset] +
+						       i_8[b + 9 + o_offset] * k[b + 9 + k_offset] +
+						       i_8[b +10 + o_offset] * k[b +10 + k_offset] +
+						       i_8[b +11 + o_offset] * k[b +11 + k_offset]);					
+						t3 += (i_8[b +12 + o_offset] * k[b +12 + k_offset] +
+						       i_8[b +13 + o_offset] * k[b +13 + k_offset] +
+						       i_8[b +14 + o_offset] * k[b +14 + k_offset] +
+						       i_8[b +15 + o_offset] * k[b +15 + k_offset]);				       
+					}
+
+					for (; b < b_stop; ++b)
+						t0 += i_8[b + o_offset] * k[b + k_offset];
+				}
+				o_8[j + frame->writ.w * i] = (uint8_t)((t0 + t1) + (t2 + t3));
+			}
+
+	}
 
 	return blurred;
 }
@@ -596,16 +643,21 @@ int main(int argc, char** argv)
 	       frame.writ.j, frame.writ.i);	
 	#endif
 
+	const int pixel_size = 1 + (metadata.dept > UINT8_MAX);
+	const MPI_Datatype ELEMENT_T = metadata.dept > UINT8_MAX ? MPI_UINT16_T : MPI_UINT8_T;
+	
+	
 	MPI_Datatype* CLEANUP(cleanup_MPI_Datatype) read_frame = MPI_commit_frame(metadata.w, metadata.h,
 										  frame.read.w, frame.read.h,
-										  frame.read.i, frame.read.j);
+										  frame.read.i, frame.read.j,
+										  ELEMENT_T);
 	if (!read_frame) {
 		fprintf(stderr, "Problem in committing read_frame.\n");
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		return EXIT_FAILURE;
 	}
 
-	uint16_t* CLEANUP(cleanup_uint16_t) in_data = (uint16_t*)malloc(2 * metadata.w * metadata.h);
+	void* CLEANUP(cleanup_void) in_data = malloc(pixel_size * metadata.w * metadata.h);
 	if (!in_data) {
 		fprintf(stderr, "Problem in allocating input data.\n");
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
@@ -626,7 +678,7 @@ int main(int argc, char** argv)
 	}
         if (MPI_File_set_view(input_file,
 			      (MPI_Offset)metadata.offset,
-			      MPI_UINT16_T,
+			      ELEMENT_T,
 			      *read_frame,
 			      "native",
 			      MPI_INFO_NULL) != MPI_SUCCESS) {
@@ -637,19 +689,22 @@ int main(int argc, char** argv)
 	if (MPI_File_read(input_file,
 			  in_data,
 			  frame.read.w * frame.read.h,
-			  MPI_UINT16_T,
+			  ELEMENT_T,
 			  &io_status) != MPI_SUCCESS) {
 		fprintf(stderr, "Problem in reading from input file for MPI.\n");
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		return EXIT_FAILURE;
 	}
-		if (io_status._ucount != 2 * (size_t)frame.read.w * (size_t)frame.read.h) {
-		fprintf(stderr, "Problem in reading from input file for MPI.\n");
+		if (io_status._ucount != pixel_size * (size_t)frame.read.w * (size_t)frame.read.h) {
+		fprintf(stderr, "Problem in reading from input file for MPI: not all data have been read.\n");
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		return EXIT_FAILURE;
 	}
-		endian_swap(in_data, frame.read.w * frame.read.h);
-	
+		#ifdef LITTLE_ENDIAN
+		if (pixel_size == 2) 
+			endian_swap((uint16_t*)in_data, frame.read.w * frame.read.h);
+		#endif
+	     	
 	
 	if (id == MASTER) {
 		if(pgm_set_metadata(output_filename, &metadata)) {
@@ -659,7 +714,7 @@ int main(int argc, char** argv)
 	}
 	MPI_Bcast(&metadata, 1, *MPI_metadata, MASTER, MPI_COMM_WORLD);
 
-	uint16_t* CLEANUP(cleanup_uint16_t) out_data = blur_frame(in_data, &frame, kernel);
+	void* CLEANUP(cleanup_void) out_data = blur_frame(in_data, &frame, kernel, pixel_size);
 	if (!out_data) {
 		fprintf(stderr, "Problem in allocating output data.\n");
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
@@ -668,7 +723,8 @@ int main(int argc, char** argv)
 	
 	MPI_Datatype* CLEANUP(cleanup_MPI_Datatype) writ_frame = MPI_commit_frame(metadata.w, metadata.h,
 										  frame.writ.w, frame.writ.h,
-										  frame.writ.i, frame.writ.j);
+										  frame.writ.i, frame.writ.j,
+										  ELEMENT_T);
 	if (!writ_frame) {
 		fprintf(stderr, "Problem in committing writ_frame.\n");
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
@@ -687,7 +743,7 @@ int main(int argc, char** argv)
 	}
         if (MPI_File_set_view(output_file,
 			      (MPI_Offset)metadata.offset,
-			      MPI_UINT16_T,
+			      ELEMENT_T,
 			      *writ_frame,
 			      "native",
 			      MPI_INFO_NULL) != MPI_SUCCESS) {
@@ -695,17 +751,20 @@ int main(int argc, char** argv)
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		return EXIT_FAILURE;
 	}
-	endian_swap(out_data, frame.writ.w * frame.writ.h);
+	#ifdef LITTLE_ENDIAN
+	if (pixel_size == 2)
+		endian_swap(out_data, frame.writ.w * frame.writ.h);
+	#endif
 	if (MPI_File_write(output_file,
 			   out_data,
 			   frame.writ.w * frame.writ.h,
-			   MPI_UINT16_T,
+			   ELEMENT_T,
 			   &io_status) != MPI_SUCCESS) {
 		fprintf(stderr, "Problem in writing to output file for MPI.\n");
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		return EXIT_FAILURE;
 	}
-	if (io_status._ucount != 2 * (size_t)frame.writ.w * (size_t)frame.writ.h) {
+	if (io_status._ucount != pixel_size * (size_t)frame.writ.w * (size_t)frame.writ.h) {
 		fprintf(stderr, "Problem in reading from input file for MPI.\n");
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		return EXIT_FAILURE;
