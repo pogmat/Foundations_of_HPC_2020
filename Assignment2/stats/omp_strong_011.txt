@@ -1,0 +1,353 @@
+ct1pg-gnode001
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:        1
+init_time:    3848.915705 +-    0.000028 ms
+load_time:    9374.432049                ms
+comp_time:   72316.784306 +-        -nan ms
+flsh_time:   11878.366262                ms
+totl_time:   97418.660648                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:        1
+init_time:    3841.880269 +-        -nan ms
+load_time:    9328.925312                ms
+comp_time:   72444.940003 +-        -nan ms
+flsh_time:   11892.852157                ms
+totl_time:   97583.883488                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:        1
+init_time:    3842.089900 +-    0.000020 ms
+load_time:    9455.826825                ms
+comp_time:   72254.200515 +-        -nan ms
+flsh_time:   11906.170815                ms
+totl_time:   97534.418681                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:        4
+init_time:     723.274422 +-    7.632304 ms
+load_time:   11227.055937                ms
+comp_time:   18107.996220 +-    2.496747 ms
+flsh_time:   12694.961738                ms
+totl_time:   42833.614422                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:        4
+init_time:     728.633345 +-    9.925612 ms
+load_time:   11248.987848                ms
+comp_time:   18121.471076 +-    5.409438 ms
+flsh_time:   12722.990509                ms
+totl_time:   42903.463051                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:        4
+init_time:     728.410566 +-   11.763837 ms
+load_time:   11223.867184                ms
+comp_time:   18118.628823 +-    7.982528 ms
+flsh_time:   12719.520707                ms
+totl_time:   42853.148768                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:        8
+init_time:     370.059112 +-    4.329501 ms
+load_time:   11227.549602                ms
+comp_time:    9091.051194 +-   23.059673 ms
+flsh_time:   12721.557418                ms
+totl_time:   33514.043026                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:        8
+init_time:     364.751948 +-    2.891069 ms
+load_time:   11226.835981                ms
+comp_time:    9089.729361 +-   22.025474 ms
+flsh_time:   12703.806297                ms
+totl_time:   33486.525039                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:        8
+init_time:     368.891300 +-    3.907765 ms
+load_time:   11242.463285                ms
+comp_time:    9081.955022 +-   18.394902 ms
+flsh_time:   12705.763428                ms
+totl_time:   33493.985249                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       12
+init_time:     219.621968 +-    0.821871 ms
+load_time:   11226.414374                ms
+comp_time:    6057.264889 +-    6.271307 ms
+flsh_time:   12833.396563                ms
+totl_time:   30427.795046                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       12
+init_time:     222.046981 +-    1.758210 ms
+load_time:   11228.918131                ms
+comp_time:    6076.564603 +-    8.869565 ms
+flsh_time:   12751.199452                ms
+totl_time:   30367.138957                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       12
+init_time:     220.992069 +-    2.007779 ms
+load_time:   11226.936155                ms
+comp_time:    6056.461717 +-    9.671218 ms
+flsh_time:   12699.220440                ms
+totl_time:   30302.867682                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       16
+init_time:     227.035469 +-   63.908318 ms
+load_time:   11217.034741                ms
+comp_time:    4636.540272 +-   60.721149 ms
+flsh_time:   12705.217912                ms
+totl_time:   29049.211639                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       16
+init_time:     225.240845 +-   62.813878 ms
+load_time:   11224.273689                ms
+comp_time:    4629.158216 +-   53.346601 ms
+flsh_time:   12692.354487                ms
+totl_time:   28938.936450                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       16
+init_time:     226.781076 +-   64.399459 ms
+load_time:   11314.559227                ms
+comp_time:    4621.972618 +-   49.366122 ms
+flsh_time:   12778.265246                ms
+totl_time:   29041.808412                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       20
+init_time:     240.913447 +-   57.953482 ms
+load_time:   11231.774706                ms
+comp_time:    3821.240275 +-  105.586411 ms
+flsh_time:   12705.215485                ms
+totl_time:   28041.670641                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       20
+init_time:     242.833559 +-   59.680008 ms
+load_time:   11223.152297                ms
+comp_time:    3821.304744 +-  106.099505 ms
+flsh_time:   12705.514843                ms
+totl_time:   28227.291658                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       20
+init_time:     242.674187 +-   60.017075 ms
+load_time:   11228.326497                ms
+comp_time:    3767.448992 +-   90.641758 ms
+flsh_time:   12694.285520                ms
+totl_time:   27909.107609                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       24
+init_time:     253.330396 +-    7.535118 ms
+load_time:   11221.086380                ms
+comp_time:    3350.216438 +-  161.024187 ms
+flsh_time:   12717.624006                ms
+totl_time:   27734.837501                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       24
+init_time:     249.568860 +-    9.943622 ms
+load_time:   11226.810124                ms
+comp_time:    3330.018174 +-  152.576535 ms
+flsh_time:   12702.711238                ms
+totl_time:   27745.138760                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       24
+init_time:     253.070584 +-    9.962242 ms
+load_time:   11230.891773                ms
+comp_time:    3333.750329 +-  150.330423 ms
+flsh_time:   12690.988491                ms
+totl_time:   27762.036574                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       28
+init_time:     165.502250 +-   29.570690 ms
+load_time:   11216.963051                ms
+comp_time:    2915.159906 +-  186.872099 ms
+flsh_time:   12726.497624                ms
+totl_time:   27244.346162                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       28
+init_time:     166.396044 +-   30.086957 ms
+load_time:   11227.073112                ms
+comp_time:    2924.887773 +-  194.156405 ms
+flsh_time:   12703.543571                ms
+totl_time:   27346.336364                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       28
+init_time:     166.430094 +-   30.144497 ms
+load_time:   11227.171251                ms
+comp_time:    2929.064241 +-  198.543072 ms
+flsh_time:   12655.931839                ms
+totl_time:   27304.498030                ms
+ct1pg-gnode002
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       32
+init_time:     138.621567 +-   32.173308 ms
+load_time:   11225.469889                ms
+comp_time:    2573.240722 +-  188.260840 ms
+flsh_time:   12912.201574                ms
+totl_time:   27090.301749                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       32
+init_time:     139.272900 +-   32.465712 ms
+load_time:   11301.094713                ms
+comp_time:    2565.634273 +-  182.834222 ms
+flsh_time:   12733.509475                ms
+totl_time:   26980.770309                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       32
+init_time:     139.127698 +-   32.273368 ms
+load_time:   11221.971714                ms
+comp_time:    2548.869084 +-  178.496431 ms
+flsh_time:   12727.682530                ms
+totl_time:   26930.112275                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       36
+init_time:     126.240358 +-   33.280057 ms
+load_time:   11229.562477                ms
+comp_time:    2323.945482 +-  166.220506 ms
+flsh_time:   12707.182745                ms
+totl_time:   26667.675949                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       36
+init_time:     127.398664 +-   33.475207 ms
+load_time:   11231.651590                ms
+comp_time:    2320.611052 +-  161.963270 ms
+flsh_time:   12673.589622                ms
+totl_time:   26638.008684                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       36
+init_time:     130.309488 +-   31.675784 ms
+load_time:   11231.843230                ms
+comp_time:    2327.188879 +-  172.742822 ms
+flsh_time:   12732.370759                ms
+totl_time:   26629.631968                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       40
+init_time:     119.600716 +-   24.231762 ms
+load_time:   11211.050318                ms
+comp_time:    2146.121043 +-  132.614329 ms
+flsh_time:   12682.815336                ms
+totl_time:   26309.596304                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       40
+init_time:     120.187167 +-   24.536437 ms
+load_time:   11234.097543                ms
+comp_time:    2144.722626 +-  131.812994 ms
+flsh_time:   12705.081998                ms
+totl_time:   26431.770071                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       40
+init_time:     118.927066 +-   24.278304 ms
+load_time:   11231.675761                ms
+comp_time:    2143.637648 +-  131.418030 ms
+flsh_time:   12728.932501                ms
+totl_time:   26450.029830                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       44
+init_time:     111.994538 +-   16.014773 ms
+load_time:   11228.204948                ms
+comp_time:    1998.869203 +-   96.012002 ms
+flsh_time:   12715.687033                ms
+totl_time:   26228.165321                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       44
+init_time:     111.790597 +-   15.993978 ms
+load_time:   11226.181403                ms
+comp_time:    2000.623394 +-   97.628394 ms
+flsh_time:   12715.781082                ms
+totl_time:   26228.122832                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       44
+init_time:     111.947299 +-   16.114690 ms
+load_time:   11233.006598                ms
+comp_time:    2000.904697 +-   96.597539 ms
+flsh_time:   12721.028463                ms
+totl_time:   26215.424084                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       48
+init_time:     124.806185 +-    2.732881 ms
+load_time:   11238.338453                ms
+comp_time:    1875.988198 +-   45.417884 ms
+flsh_time:   12717.731332                ms
+totl_time:   26086.698418                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       48
+init_time:     123.157512 +-    2.307719 ms
+load_time:   11229.745122                ms
+comp_time:    1876.078399 +-   45.494350 ms
+flsh_time:   12691.822359                ms
+totl_time:   26040.109224                ms
+### width  :    21600
+### height :    21600
+### halo   :        5
+### threads:       48
+init_time:     122.990743 +-    2.876404 ms
+load_time:   11233.946810                ms
+comp_time:    1875.793163 +-   45.678871 ms
+flsh_time:   12699.829540                ms
+totl_time:   26072.634067                ms
