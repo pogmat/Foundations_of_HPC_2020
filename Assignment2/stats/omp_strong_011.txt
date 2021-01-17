@@ -215,7 +215,6 @@ load_time:   11227.171251                ms
 comp_time:    2929.064241 +-  198.543072 ms
 flsh_time:   12655.931839                ms
 totl_time:   27304.498030                ms
-ct1pg-gnode002
 ### width  :    21600
 ### height :    21600
 ### halo   :        5

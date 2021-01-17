@@ -1,5 +1,4 @@
 ct1pg-gnode002
-ct1pg-gnode002
 Elapsed time with   1 nodes:       80.584844 s.
 Elapsed time with   4 nodes:       23.055103 s.
 Elapsed time with   8 nodes:       19.104766 s.
