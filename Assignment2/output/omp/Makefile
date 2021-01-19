@@ -1,7 +1,7 @@
-TARGET = omp_blur
+TARGET = blur.omp
 
 HEADS = grid kernel pgm_bin
-SRC = omp_blur grid kernel pgm_bin
+SRC = blur.omp grid kernel pgm_bin
 LIBS = -lm
 
 TDIR = bin
